@@ -39,7 +39,8 @@ When the work **genuinely** needs structure, the same ladder says so — and nam
 ## Install
 
 ```bash
-git clone <this-repo> && cd orchestration-design
+git clone https://github.com/elementalsouls/orchestration-design.git
+cd orchestration-design
 ./build.sh
 ```
 
