@@ -15,10 +15,14 @@ still ships a report for the other five.
 The loop-first gate says: use a `for` loop unless you hit a real graph
 requirement. This scenario hits two, hard.
 
-- **Parallelism.** The documents are genuinely independent — no document's
-  answers depend on another's. A sequential loop over 6 (or 600) PDFs pays the
-  full latency of every model call end to end. Fan-out runs them in one
-  superstep.
+- **Context pressure.** This is the trigger. Six PDFs is the fixture; the real
+  workload is hundreds, and their full text does not fit in one context window.
+  Each document needs its own clean context to be answered well.
+  *Independence — no document's answers depend on another's — is what makes
+  splitting safe, but it is not why we split.* Nearly every batch has
+  independent items; if these fitted in one context a loop would win at equal
+  budget. Lower latency is a real benefit of fan-out here, not a justification
+  for it.
 - **Failure isolation.** In a plain loop, an unparseable PDF either raises and
   kills the whole batch, or you wrap the body in a try/except and hand-roll
   partial-result bookkeeping. The graph gives you that for free: a branch that

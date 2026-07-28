@@ -60,10 +60,10 @@ Phase 1 is the core of the skill. Start at rung 1, stop at the first rung that h
 | **2 · Loop** | One agent with tools, self-terminating | Correctness cannot be asserted mechanically |
 | **3 · Loop + reviewer** ← **default** | One writer, one read-only checker with clean context | — |
 | **4 · Reviewer panel** | Several reviewers, different lenses, one synthesis | One reviewer provably misses a defect class *and* stakes justify the spend |
-| **5 · Fan-out** | One branch per item, own context, isolated failures | **Work exceeds one context window**, or items are genuinely independent |
+| **5 · Fan-out** | One branch per item, own context, isolated failures | **Work exceeds one context window** — independence alone is not enough |
 | **6 · Durable workflow** | Persistent, resumable, scheduled | Run outlives a process, or needs replay or a human pause |
 
-**What does not justify climbing:** task difficulty, step count, "feels complex", "could run in parallel", or wanting the design to look sophisticated.
+**What does not justify climbing:** task difficulty, step count, "feels complex", "could run in parallel", or wanting the design to look sophisticated. Independence is a *precondition* for fan-out, not a reason — nearly every batch has independent items, and splitting destroys any judgement that needs to see them together.
 
 Two rules hold at every rung:
 

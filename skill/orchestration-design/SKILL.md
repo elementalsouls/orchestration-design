@@ -38,12 +38,14 @@ Start at rung 1. **Stop at the first rung that holds.** Climb only when that run
 | **2 · Loop** | One agent with tools, self-terminating | Output correctness cannot be asserted mechanically |
 | **3 · Loop + reviewer** ← **default** | One writer, one read-only checker given clean context | — |
 | **4 · Reviewer panel** | Several reviewers, different lenses, one synthesis | One reviewer provably misses a whole class of defect *and* the stakes justify the spend |
-| **5 · Fan-out** | One branch per item, own context, isolated failures | **The work exceeds one context window**, or items are genuinely independent |
+| **5 · Fan-out** | One branch per item, own context, isolated failures | **The work exceeds one context window** — independence alone is not enough |
 | **6 · Durable workflow** | Persistent, resumable, scheduled | The run outlives a single process, or needs replay or a human pause |
 
 **Rung 3 is the default for serious work.** A read-only reviewer is the single highest-value addition — but note it *improves* a design without *justifying* a bigger one. Frameworks with explicit verifiers still failed often.
 
 **What does NOT justify climbing:** task difficulty, number of steps, "feels complex", "could run in parallel", or wanting the design to look sophisticated. Parallelism buys wall-clock time and context isolation; at equal budget it does not buy accuracy.
+
+**Independence is a precondition for rung 5, not a trigger.** Nearly every batch has independent items, so treating independence as sufficient sends everything to fan-out — the opposite of what the evidence supports. Context pressure is the trigger; independence only decides whether fan-out is *safe*. And check what splitting costs you: if any judgement needs to see items together — spotting duplicates, ranking, deduping — fan-out destroys it, because each branch sees one item.
 
 Name the rung and its trigger out loud. *"Rung 3, because output quality can't be asserted mechanically"* is a decision. *"It's complex, so a graph"* is not.
 

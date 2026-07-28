@@ -53,8 +53,15 @@ simultaneously" where "information exceeds single context windows."
 
 Consequence for the gate: *parallelism alone is not a reason.* Parallelism buys wall-clock
 time and context isolation. At equal token budget it does not buy accuracy. Ask whether
-the work exceeds one context window or the items are genuinely independent — not whether
-it could be run concurrently.
+the work **exceeds one context window** — not whether it could be run concurrently.
+
+Independence is a **precondition**, not a trigger. Nearly every batch has independent
+items, so treating independence as sufficient sends all batch work to fan-out, which is
+the opposite of what this evidence supports. Independence only tells you whether fan-out
+is *safe*; context pressure tells you whether it is *warranted*. And splitting has a
+cost the DPI argument predicts: any judgement that needs to see items together —
+deduplication, ranking, cross-referencing — becomes impossible once each branch sees one
+item.
 
 ## 3. Multi-agent systems fail a lot, and verifiers are not a silver bullet
 
@@ -127,7 +134,8 @@ writer, helpers that return judgement.
 1. **Loop-first is the evidence-backed default,** not a stylistic preference. At equal
    budget the single agent wins or ties.
 2. **Reframe the parallelism criterion as context pressure.** "Could run concurrently" is
-   not a reason. "Exceeds one context window" or "items genuinely independent" is.
+   not a reason, and neither is "the items are independent" — that is a precondition for
+   fan-out being safe, not evidence that it is warranted. "Exceeds one context window" is.
 3. **Single writer is a law, not a preference.** Extra nodes should contribute judgement,
    not edits. This is the same rule the state-ownership table enforces.
 4. **Give reviewers clean context deliberately.** Ephemeral reviewers are not just

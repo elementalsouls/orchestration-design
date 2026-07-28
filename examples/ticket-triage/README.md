@@ -175,5 +175,8 @@ Two real defects, both found by *running* the skill rather than reading it:
    Python type — list means append. Round 2 stacked on round 1, so `T-1044`
    appeared twice, once at P2 and once at P0. Reducers are now **declared, never
    inferred**, and a count assertion catches the whole class.
-2. **The same footgun ships in `references/targets/plain-code.md`**, which shows
-   exactly that type-inferring `apply()`. Filed for fixing.
+2. **The same footgun shipped in `references/targets/plain-code.md`**, which
+   demonstrated exactly that type-inferring `apply()`. Now fixed: the target
+   declares an explicit `APPEND` set copied from the Phase 2 state table, shows
+   the wrong version under a "never infer the reducer from the type" heading,
+   and requires a count assertion as the guard.

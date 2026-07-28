@@ -41,15 +41,43 @@ def writer(s: State) -> dict:
     return {"draft": r.content, "attempts": s.attempts + 1,
             "tokens_spent": r.usage["total_tokens"]}
 
+# Reducers are DECLARED, copied from the Phase 2 state table. Never inferred.
+APPEND = {"notes", "errors"}          # everything else replaces
+
+
 def apply(s: State, update: dict) -> State:
     for k, v in update.items():
-        cur = getattr(s, k)
-        # append-reduced fields concatenate; everything else replaces
-        setattr(s, k, cur + v if isinstance(cur, list) else v)
+        setattr(s, k, getattr(s, k) + v if k in APPEND else v)
     return s
 ```
 
-That `apply` function is your reducer layer. Eight lines, and it is the piece frameworks charge the most abstraction for.
+That `apply` function is your reducer layer. Six lines, and it is the piece frameworks charge the most abstraction for.
+
+### Never infer the reducer from the type
+
+The tempting version is one line shorter and quietly wrong:
+
+```python
+# WRONG — "it's a list, so append"
+setattr(s, k, cur + v if isinstance(cur, list) else v)
+```
+
+Plenty of list fields are **replace**: a set of per-item results the owner
+rewrites whole on each pass, a ranked list, a parsed batch. Type-inference
+appends them instead, so round 2 stacks on top of round 1 — **the same item
+appears twice, at two different values** — and nothing raises. It surfaces as a
+duplicate-data bug three files from the cause.
+
+`APPEND` is literally the append-reduced column of your Phase 2 state table.
+Copying it across is the reason you wrote the table down.
+
+**Then guard it with a count.** Silent duplication and silent loss are the two
+failures a wrong reducer produces, and neither is visible without one:
+
+```python
+assert len(s.results) == len(s.items) - len(s.errors)
+assert len({r["id"] for r in s.results}) == len(s.results)   # no duplicates
+```
 
 ## Pattern A — sequential
 
