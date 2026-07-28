@@ -1,6 +1,6 @@
 # First prompt to paste into Claude Code
 
-Copy-paste this as your first message after `cd ~/Research/Graph-Engineering && claude`:
+Copy-paste this as your first message after `cd ~/Research/orchestration-design && claude`:
 
 ---
 

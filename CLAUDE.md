@@ -1,9 +1,9 @@
-# Graph-Engineering Project
+# orchestration-design
 
 ## What this project is
 A toolkit that helps builders decide how much orchestration a piece of work needs, design it on paper, show it to a human for visual review, implement it on any runtime, and verify the build matches the design. Based on the checklist from https://www.aibuilderclub.com/blog/graph-engineering-guide-2026, then re-grounded in 2026 research (see `references/evidence.md`).
 
-**The skill is named `orchestration-design`, not `graph-engineering`.** The repo keeps the original name; the skill was renamed because its most common correct output is *not* a graph. "Loop vs. graph" is a false choice — a loop is a graph with one node. The real questions are how many writers and who decides routing.
+**Repo, skill and install path are all `orchestration-design`.** It was originally called graph-engineering; renamed because its most common correct output is *not* a graph. "Loop vs. graph" is a false choice — a loop is a graph with one node. The real questions are how many writers and who decides routing.
 
 **Two rules hold everywhere, both evidence-backed:**
 1. **One writer, always.** Extra nodes contribute judgement, never edits.
@@ -16,7 +16,8 @@ A toolkit that helps builders decide how much orchestration a piece of work need
 - `skill/orchestration-design/` — skill source:
   - `SKILL.md` — Track A (phases 0, 1, 2, 2.5, 3, 4) and Track B (audit). Keep under ~150 lines.
   - Phase 1 is a **six-rung ladder** (plain script → loop → loop+reviewer → panel → fan-out → durable). Default is rung 3. Climb only when a rung's named trigger is literally true.
-  - Phase 2.5 is a **visual review gate**: hand the human the Mermaid block plus tables, point them at mermaid.live to edit, treat what comes back as source of truth.
+  - Phase 2.5 is a **visual review gate and a hard stop**: hand over the Mermaid block plus tables, ask one specific question ("which node would you delete?"), and **end the turn**. No implementation in the same turn. If running autonomously, label the result DESIGN NOT REVIEWED rather than treating absence as approval.
+  - Phase 4 is **rung-aware**. Rungs 4–6 assert the edge sets match (`verify_topology.py`). Rungs 1–3 emit no diagram, so they assert behaviour instead: reviewer is read-only, the bound is live, the exhaustion terminal is reachable and marked, failure is isolated.
   - `references/evidence.md` — the research behind the two rules and the ladder
   - `references/graph-design.md` — the runtime-free design method (Phase 2 core)
   - `references/design-checklist.md` — annotated 8-point design checklist

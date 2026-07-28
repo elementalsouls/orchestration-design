@@ -39,7 +39,7 @@ When the work **genuinely** needs structure, the same ladder says so — and nam
 ## Install
 
 ```bash
-git clone <this-repo> && cd Graph-Engineering
+git clone <this-repo> && cd orchestration-design
 ./build.sh
 ```
 
@@ -150,4 +150,4 @@ build.sh                       package + install to ~/.claude/skills/
 CLAUDE.md                      conventions for working on this repo
 ```
 
-> **On the names:** the repo is `Graph-Engineering` (its origin), the skill is `orchestration-design`. They differ deliberately — the skill was renamed because its most common correct output is *not* a graph. "Loop vs. graph" is a false choice anyway: a loop is a graph with one node and one edge back to itself. The real questions are how many writers, and who decides the routing.
+> **Why not "graph engineering"?** That was the original name, and it set the wrong expectation — you'd install it looking for a graph builder and get a gatekeeper. "Loop vs. graph" is a false choice anyway: **a loop is a graph with one node and one edge back to itself.** The real questions are how many writers, and who decides the routing. Ask it that way and the answer is usually *one writer, plus a reviewer*.

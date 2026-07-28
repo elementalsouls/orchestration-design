@@ -14,12 +14,7 @@ Two rules hold at every level, and both come from `references/evidence.md`:
 1. **One writer. Always.** Extra nodes contribute judgement, never edits. Parallel writers making conflicting implicit decisions is the failure mode that killed agent-swarm designs industry-wide.
 2. **Structure does not buy intelligence.** At matched token budgets a single agent matches or beats multi-agent designs. Climbing costs money and reliability. Most reported multi-agent wins track token spend, not architecture.
 
-## Two tracks
-
-| Situation | Track |
-|---|---|
-| Building something new | **Track A** — phases 0 → 1 → 2 → 2.5 → 3 → 4 below |
-| Something exists and has rotted | **Track B** — read `references/auditing-an-existing-graph.md`, then rejoin at Phase 2 |
+**Two tracks.** Building something new → phases 0 → 1 → 2 → 2.5 → 3 → 4 below. Something already exists and has rotted → read `references/auditing-an-existing-graph.md`, then rejoin at Phase 2.
 
 ## Phase 0 — Scope the work
 
@@ -74,11 +69,19 @@ Do not go straight from design to code. Hand over, in one message:
 - the **node table**, **state table**, **bounds** and **cost estimate**
 - the **rung chosen and its trigger**
 
-Then tell them: *paste the Mermaid into <https://mermaid.live> to move nodes, delete them, or re-route the edges.* Whatever they hand back is the source of truth — update the tables to match the edited diagram rather than arguing with it. Ask directly whether any node should be merged or removed; people cut more than they add once they can see it.
+Then tell them: *paste the Mermaid into <https://mermaid.live> to move nodes, delete them, or re-route the edges.* Whatever they hand back is the source of truth — update the tables to match the edited diagram rather than arguing with it.
+
+**Ask one specific question, not "does this look good?"** Ask *"which node would you delete?"* or *"is any of this state written by two things?"*. Open approval questions get "looks fine"; specific ones get real answers, and people cut more than they add once they can see the shape.
 
 **Keep the design as Mermaid text, not an image.** Text is the only form the human can edit *and* Phase 4 can assert against. The moment the design becomes a PNG or a drawing-tool file, verification breaks and the diagram starts drifting from the code.
 
-Wait for approval before Phase 3, unless told to just build it.
+### This is a hard stop
+
+**End the turn on the design.** Do not write implementation code in the same turn you present it — no tool calls after the design message. A gate you walk straight through is not a gate, and "I'll show them the diagram and then build it" is the failure mode this phase exists to prevent.
+
+Skip the stop **only** when the user said *in this request* to just build it. A general "go ahead" from earlier in the conversation does not carry.
+
+**If you must proceed without a human** — autonomous run, scheduled job, no one to answer — say so explicitly and label the result **DESIGN NOT REVIEWED**. Do not silently treat unavailability as approval.
 
 ## Phase 3 — Choose a target, then implement
 
@@ -102,13 +105,24 @@ Adopting a framework for a three-node pipeline is the same error as climbing a r
 - **Hard bounds** — every conditional loop checks its counter; set the global step limit; track spend in state and route out when the budget is hit.
 - **Don't hand-roll the runtime** if you chose a framework.
 
-Deliver something runnable, plus a README carrying both the design diagram and the one emitted by the code.
+Deliver something runnable, plus a README carrying the approved design diagram — and, at rungs 4–6, the one the code emits.
 
 ## Phase 4 — Verify by assertion, not by eye
 
-Run it. Then prove the topology: parse the approved design and the emitted diagram into edge sets and **assert they are equal**. Comparing two nine-edge diagrams by eye is exactly the check a tired builder skips. The Graph-Engineering repo ships a working version as `verify_topology.py` alongside its reference implementations.
+Run it. Then prove it matches the design that was approved in Phase 2.5. **How you prove it depends on the rung** — most designs stop at rungs 1–3, which emit no diagram at all, so topology comparison does not apply there.
 
-A mismatch means the implementation drifted from what the human approved in Phase 2.5. Fix it; don't hand-wave. Confirm every loop-back has a live counter, and that every branch you documented is actually reachable — a bounded reject path that never fires in any test is undemonstrated, not proven.
+**Rungs 4–6 — a framework compiled a graph.** Parse the approved Mermaid and the emitted `draw_mermaid()` output into edge sets and **assert they are equal**. Comparing two nine-edge diagrams by eye is exactly the check a tired builder skips. This repo ships a working version as `reference-implementation/verify_topology.py`.
+
+**Rungs 1–3 — plain code, no diagram to emit.** There is no topology to compare, so assert the *behaviour* the design promised. Write these four, and run them:
+
+1. **The reviewer is read-only.** Snapshot the artifact, run the reviewer, assert it is unchanged. Proves it, rather than trusting the prompt.
+2. **The bound is live.** Substitute a reviewer that never passes; assert the run stops at `MAX_ATTEMPTS` instead of looping forever.
+3. **The exhaustion terminal is reachable and marked.** Assert that run produces the caveat, park, or flag you designed — silently shipping unreviewed work is the bug.
+4. **Failure is isolated.** Where the design claims one item can fail without killing the rest, force one to fail and assert the others still complete and the count adds up.
+
+**At every rung:** confirm each loop-back has a counter that is both read *and* incremented, and that every branch you documented actually fires in some run. A bounded reject path that never executes in any test is undemonstrated, not proven — add a second scenario that reaches it.
+
+A mismatch means the implementation drifted from what the human approved. Fix it; don't hand-wave.
 
 ## Quick reference
 
