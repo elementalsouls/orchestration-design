@@ -61,7 +61,7 @@ Read `references/graph-design.md`. Produce exactly five parts:
 2. **Edges** — routing as a Mermaid diagram: what's sequential, what fans out, what fans in, where the loop-back lives. Aim for one conditional edge.
 3. **State schema** — every field: type, reducer (replace vs. append), and **which single node may write it**. Fan-in fields must have append reducers. This table is how rule 1 gets enforced.
 4. **Bounds** — an attempt counter on every loop-back, a global step limit, and a spend budget a router actually reads.
-5. **Cost estimate** — worst-case calls × attempts × branches × tokens. A number, before anyone builds. If it's shocking, the design is wrong, not the budget.
+5. **Cost, compared** — worst case for the rung you chose **and the rungs either side of it**. A single number does not inform the decision; the delta does. If the rung below is nearly as cheap, you climbed too far. If the rung above costs more and buys nothing, say so out loud. Method in `references/graph-design.md`.
 
 ## Phase 2.5 — Show the human the design
 
@@ -70,7 +70,7 @@ Do not go straight from design to code. Hand over, in one message:
 1. an **ASCII sketch** of the flow — readable in the terminal with nothing installed. Skip it above ~8 nodes, where ASCII stops helping.
 2. the **Mermaid block** — the source of truth, and the only thing Phase 4 asserts against.
 3. a **pre-filled mermaid.live link**, so editing needs no copy-paste. `tools/mermaid_link.py` in this repo generates one from a diagram.
-4. the **node table**, **state table**, **bounds** and **cost estimate**
+4. the **node table**, **state table**, **bounds**, and the **cost comparison** across adjacent rungs
 5. the **rung chosen and its trigger**
 
 Whatever they hand back is the source of truth — update the tables to match the edited diagram rather than arguing with it. The ASCII is a preview and may drift: **never assert against it**, and never let an image replace the Mermaid. Text is the only form a human can edit *and* Phase 4 can check.
@@ -113,14 +113,15 @@ Deliver something runnable, plus a README carrying the approved design diagram �
 
 Run it. Then prove it matches the design that was approved in Phase 2.5. **How you prove it depends on the rung** — most designs stop at rungs 1–3, which emit no diagram at all, so topology comparison does not apply there.
 
-**Rungs 4–6 — a framework compiled a graph.** Parse the approved Mermaid and the emitted `draw_mermaid()` output into edge sets and **assert they are equal**. Comparing two nine-edge diagrams by eye is exactly the check a tired builder skips. This repo ships a working version as `reference-implementation/verify_topology.py`.
+**Rungs 4–6 — a framework compiled a graph.** Parse the approved Mermaid and the emitted `draw_mermaid()` output into edge sets and **assert they are equal**. Comparing two nine-edge diagrams by eye is exactly the check a tired builder skips. This repo ships a working version as `reference-implementation/verify_topology.py`. Then write assertion 5 below — a matching topology says nothing about whether parallel branches lost results.
 
-**Rungs 1–3 — plain code, no diagram to emit.** There is no topology to compare, so assert the *behaviour* the design promised. Write these four, and run them:
+**Rungs 1–3 — plain code, no diagram to emit.** There is no topology to compare, so assert the *behaviour* the design promised. Write these five, and run them:
 
 1. **The reviewer is read-only.** Snapshot the artifact, run the reviewer, assert it is unchanged. Proves it, rather than trusting the prompt.
 2. **The bound is live.** Substitute a reviewer that never passes; assert the run stops at `MAX_ATTEMPTS` instead of looping forever.
 3. **The exhaustion terminal is reachable and marked.** Assert that run produces the caveat, park, or flag you designed — silently shipping unreviewed work is the bug.
-4. **Failure is isolated.** Where the design claims one item can fail without killing the rest, force one to fail and assert the others still complete and the count adds up.
+4. **Failure is isolated.** Where the design claims one item can fail without killing the rest, force one to fail and assert the others still complete.
+5. **The counts add up.** One output per input, no duplicate ids, successes + failures = total. Silent duplication and silent loss are what a wrong reducer or a missing fan-in reducer produce, and **no other assertion here notices** — the run looks fine and the data is wrong.
 
 **At every rung:** confirm each loop-back has a counter that is both read *and* incremented, and that every branch you documented actually fires in some run. A bounded reject path that never executes in any test is undemonstrated, not proven — add a second scenario that reaches it.
 
@@ -130,16 +131,14 @@ A mismatch means the implementation drifted from what the human approved. Fix it
 
 | Symptom | Right move |
 |---|---|
-| One agent, one goal, verifiable output | Rung 2 — loop |
-| Summarize / fetch / format pipeline | Rung 2 with tools; a 5-node graph is over-engineering |
-| Output quality needs an independent check | Rung 3 — one read-only reviewer, bounded reject loop |
-| High-stakes output, one reviewer isn't enough | Rung 4 — panel → synthesise → bounded gate |
-| Work exceeds one context window | Rung 5 — fan-out |
-| One bad item aborts the whole batch | Rung 5 with per-branch error isolation |
-| Re-runs everything from scratch after a failure | Checkpointer, not more nodes |
-| Loops forever / costs exploded | Missing attempt caps + step limit + spend field |
-| Outputs change depending on node order | State drift — find the field with two writers |
-| "People are using graphs, should we?" | Read `references/evidence.md` — most of that advantage was bought with tokens |
+| Choosing how much structure | The ladder above. Start at rung 1; climb only on a named trigger |
+| One bad item aborts the whole batch | Per-branch error isolation — not more nodes |
+| Re-runs everything from scratch after a failure | A checkpointer — not more nodes |
+| Loops forever / costs exploded | Missing attempt cap, step limit, or spend field |
+| Outputs change between identical runs | State drift — find the field with two writers |
+| Same item appears twice, at two different values | Wrong reducer — a replace field is being appended |
+| Results from parallel branches go missing | Fan-in field needs an append reducer; assert the counts |
+| "Everyone's using graphs, should we?" | `references/evidence.md` — most of that advantage was bought with tokens |
 
 ## References
 

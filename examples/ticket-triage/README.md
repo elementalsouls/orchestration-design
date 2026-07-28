@@ -99,11 +99,11 @@ on exhaustion the digest ships **marked `UNREVIEWED`** rather than silently.
 The number the skill makes you produce *before* building. It is only meaningful
 as a comparison, so here are all three options for the same 12 tickets:
 
-| Option | Arithmetic | Worst case |
-|---|---|---|
-| Rung 2 — loop, no reviewer | 1 × 2.5k | **~2.5k tokens** |
-| **Rung 3 — chosen** | 2 rounds × (2.5k triage + 1.5k review) | **~8k typical, 12k worst** |
-| Rung 5 — fan-out per ticket | 12 items × 2 attempts × (400 + 300) | **~17k, and no accuracy gain** |
+| Option | Arithmetic | Worst case | Buys you |
+|---|---|---|---|
+| Rung 2 — loop, no reviewer | 1 × 2.5k | ~2.5k | — |
+| **Rung 3 — chosen** | 2 rounds × (2.5k triage + 1.5k review) | **~8k typical, 12k worst** | the leak gets caught |
+| Rung 5 — fan-out per ticket | 12 × 2 × (400 + 300) | ~17k | **nothing** — and loses duplicate detection |
 
 Rung 3 costs ~3× the bare loop and buys the one thing that matters: the leak
 gets caught. Rung 5 costs *more* than rung 3 and buys nothing here — the
@@ -119,13 +119,15 @@ framework. ~200 lines of Python, no dependencies.
 
 ## Phase 4 — verification (rungs 1–3: assert behaviour, not topology)
 
+All five assertions, run by `--selftest`:
+
 | # | Assertion | Result |
 |---|---|---|
 | 1 | Reviewer is read-only — snapshot assignments, run reviewer, compare | asserted every round, inline |
 | 2 | Bound is live — substitute a never-passing reviewer | stops at `MAX_ATTEMPTS` |
 | 3 | Exhaustion terminal reachable **and** marked | digest carries `UNREVIEWED` |
 | 4 | Failure isolated — inject a malformed ticket | skipped, other 12 complete |
-| + | Counts — one assignment per ticket, no duplicate ids | catches reducer bugs |
+| 5 | **Counts add up** — one assignment per ticket, no duplicate ids | catches the reducer bug below |
 
 ## The run
 

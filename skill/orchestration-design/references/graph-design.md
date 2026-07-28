@@ -84,15 +84,38 @@ A graph is many loops, sometimes running in parallel. A weak verifier now burns 
 
 Then decide the **exhaustion terminal** explicitly (see §2) and make sure the run tells you it happened. A result that silently shipped without passing review is worse than a loud failure.
 
-## 5. Cost
+## 5. Cost — as a comparison, never a bare number
 
-Produce a number in Phase 2, before anyone builds:
+Produce this in Phase 2, before anyone builds:
 
 ```
 worst case ≈ items × attempts × nodes_per_item × tokens_per_call
 ```
 
-Work an example. 400 documents × 2 attempts × (1 answer call @ 4k + 1 review call @ 800) ≈ 3.8M tokens. If that number is shocking, **the design is wrong** — reduce attempts, route cheap work to a cheap model, or triage items so only the hard ones take the expensive path. Do not treat the budget as the thing that needs adjusting.
+**One number is nearly useless.** "This design costs 8k tokens" tells the reader
+nothing — 8k compared to what? The decision it has to inform is *which rung*, so
+cost the rung you chose **and the rungs either side of it**:
+
+| Option | Arithmetic | Worst case | Buys you |
+|---|---|---|---|
+| Rung below | 1 × 2.5k | ~2.5k | — |
+| **Chosen** | 2 rounds × (2.5k + 1.5k) | **~8k** | the reviewer catches the thing that hurts |
+| Rung above | 12 items × 2 × (400 + 300) | ~17k | *nothing here* — items fit in one context |
+
+Read it two ways, and say the answer out loud:
+
+- **Is the rung below nearly as cheap?** Then you climbed too far, unless you can
+  name what the extra spend buys.
+- **Does the rung above cost more and buy nothing?** Say so explicitly. That
+  sentence is the single most useful line in a design review, and it is the one
+  people skip.
+
+Note the third row: fan-out often costs *more* than a loop with a reviewer,
+because per-item overhead is paid N times. "More parallel" is not "cheaper".
+
+If the chosen number is shocking, **the design is wrong** — reduce attempts,
+route cheap work to a cheap model, or triage so only hard items take the
+expensive path. Do not treat the budget as the thing that needs adjusting.
 
 Two levers that usually help more than they look:
 
