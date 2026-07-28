@@ -52,10 +52,12 @@ Edit files under `skill/orchestration-design/`, then run `./build.sh` — it rep
 
 ## Testing
 ```bash
+python run_checks.py --setup               # once per clone: ./.venv + langgraph
 python run_checks.py                       # all six checks, one exit code
 python run_checks.py --selftest            # the runner's own assertions
 python tools/mermaid_link.py --selftest    # URL payload round-trips
 ```
-All must exit 0 offline with stub models. Missing dependencies FAIL by default —
-`pip install -U langgraph` (verified against 1.2.10), or `--allow-skip` locally.
-Use `--python /path/to/venv/bin/python` to run the checks under another interpreter.
+All must exit 0 offline with stub models. `run_checks.py` prefers the repo's
+`.venv` (gitignored, langgraph 1.2.10), falling back to the current interpreter.
+Missing dependencies FAIL by default — `--setup` fixes it, `--allow-skip`
+tolerates it, `--python /other/bin/python` overrides the interpreter.

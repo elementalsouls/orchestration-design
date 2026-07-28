@@ -12,8 +12,9 @@ Do the following to get oriented:
 1. Read CLAUDE.md and `skill/orchestration-design/SKILL.md`. Read `references/graph-design.md` for the design method. Read a file under `references/targets/` only if you need that specific runtime.
 2. Confirm the skill is installed: `ls ~/.claude/skills/orchestration-design`. If missing, run `./build.sh`.
 3. Verify everything still runs: `python run_checks.py`
-   Exits 0 when all six checks pass. Missing dependencies FAIL by default —
-   `pip install -U langgraph`, or pass `--allow-skip` to tolerate them locally.
+   Exits 0 when all six checks pass. It uses the repo's `.venv` automatically;
+   on a fresh clone run `python run_checks.py --setup` first. Missing
+   dependencies FAIL by default — `--allow-skip` tolerates them.
 4. Give me a short status report: what the skill does, which patterns the five examples cover, and confirmation the runs and the topology check passed.
 
 From then on, whenever I ask you to build or fix any multi-step system — agent workflow, pipeline, batch job, ETL — follow the orchestration-design skill's process. Expect it to talk me out of a graph when a loop would do; that is the intended behaviour, not a failure.

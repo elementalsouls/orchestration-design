@@ -13,9 +13,10 @@ Designed with the orchestration-design skill:
 Missing dependencies FAIL by default: in CI a skipped check that silently
 passes is how green builds start lying. Use --allow-skip locally.
 
-    python run_checks.py                  # langgraph missing -> FAIL, exit 1
-    python run_checks.py --allow-skip     # langgraph missing -> SKIP, exit 0
-    python run_checks.py --python /path/to/venv/bin/python
+    python run_checks.py --setup          # fresh clone: create ./.venv + deps
+    python run_checks.py                  # uses ./.venv if present
+    python run_checks.py --allow-skip     # missing deps -> SKIP, exit 0
+    python run_checks.py --python /other/bin/python
     python run_checks.py --selftest
 """
 
@@ -30,6 +31,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 REF = ROOT / "reference-implementation"
 TIMEOUT = 30          # the one bound that applies: a hung check must not hang CI
+
+
+def venv_python() -> Path:
+    win = ROOT / ".venv" / "Scripts" / "python.exe"
+    return win if win.exists() else ROOT / ".venv" / "bin" / "python"
+
+
+def default_python() -> str:
+    """Prefer the repo's own .venv so a bare `python run_checks.py` is green.
+
+    .venv is gitignored, so a fresh clone falls back to the current interpreter
+    and reports the missing dependency with the command that fixes it.
+    """
+    py = venv_python()
+    return str(py) if py.exists() else sys.executable
 
 PASS, FAIL, SKIP, TIMED_OUT, DEPMISS = "PASS", "FAIL", "SKIP", "TIMEOUT", "NO-DEP"
 BAD = {FAIL, TIMED_OUT}          # always fatal
@@ -97,19 +113,42 @@ def report(results: list[dict], allow_skip: bool) -> int:
     if failed:
         print(f"\n  FAILED: {', '.join(r['name'] for r in failed)}")
         if any(r["status"] == DEPMISS for r in failed):
-            print("  (missing deps fail by default — pass --allow-skip to tolerate)")
+            print("  fix: python run_checks.py --setup     (creates ./.venv + deps)")
+            print("  or:  python run_checks.py --allow-skip (tolerate, stay green)")
         return 1
     print("\n  all checks passed")
     return 0
 
 
+def setup() -> int:
+    """Create .venv and install what the checks need. For a fresh clone."""
+    import venv
+    target = ROOT / ".venv"
+    print(f"  creating {target}")
+    venv.EnvBuilder(with_pip=True, clear=False).create(target)
+    py = venv_python()
+    print("  installing langgraph")
+    r = subprocess.run([str(py), "-m", "pip", "install", "-q", "-U", "langgraph"])
+    if r.returncode != 0:
+        print("  pip install failed")
+        return r.returncode
+    print(f"  done — `python {Path(__file__).name}` will now use {py}")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description="Run every check in this repo.")
-    ap.add_argument("--python", default=sys.executable,
-                    help="interpreter to run checks with (default: this one)")
+    ap.add_argument("--python", default=None,
+                    help="interpreter to run checks with (default: ./.venv, else this one)")
     ap.add_argument("--allow-skip", action="store_true",
                     help="tolerate missing dependencies instead of failing")
+    ap.add_argument("--setup", action="store_true",
+                    help="create ./.venv and install dependencies, then exit")
     args = ap.parse_args(argv)
+
+    if args.setup:
+        return setup()
+    args.python = args.python or default_python()
 
     checks = discover()
     needed = {c["needs"] for c in checks if c["needs"]}

@@ -94,14 +94,17 @@ Designs stay **text, never images** — text is the only form you can edit *and*
 Five runnable examples. All run offline with deterministic stub models — **no API key** — and every one asserts its own behaviour, so they cannot silently rot.
 
 ```bash
-pip install -U langgraph   # needed by 02-05; 01 and the verifier are stdlib only
-python run_checks.py       # runs all six, exits non-zero if any fail
+python run_checks.py --setup   # once: creates ./.venv and installs langgraph
+python run_checks.py           # all six checks, one exit code
 ```
 
-`run_checks.py` treats a missing dependency as a **failure**, not a skip — in CI
-a silently-skipped check is how green builds start lying. Pass `--allow-skip`
-when you want a fresh clone to stay green, or `--python /path/to/venv/bin/python`
-to run the checks under a specific interpreter.
+`run_checks.py` uses the repo's own `.venv` when it exists, so the bare command
+is green with no flags. `.venv` is gitignored, so a fresh clone runs `--setup`
+first.
+
+A missing dependency is a **failure**, not a skip — in CI a silently-skipped
+check is how green builds start lying. Pass `--allow-skip` to tolerate it
+anyway, or `--python /other/bin/python` to run under a different interpreter.
 
 | Example | Pattern | What it demonstrates |
 |---|---|---|
