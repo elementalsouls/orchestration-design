@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="911" height="378" viewBox="0 0 911 378" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13.5">
+<rect width="911" height="378" rx="8" fill="#12191d"/>
+<rect width="911" height="40" rx="8" fill="#1b262b"/>
+<rect y="32" width="911" height="8" fill="#1b262b"/>
+<circle cx="20" cy="20.0" r="5.5" fill="#e0655f"/>
+<circle cx="37" cy="20.0" r="5.5" fill="#e0b341"/>
+<circle cx="54" cy="20.0" r="5.5" fill="#5fb865"/>
+<text x="75" y="24.5" fill="#7d8f95">verification</text>
+<text x="18" y="54" fill="#56c2cb" xml:space="preserve">$ python triage.py --selftest</text>
+<text x="18" y="74" fill="#6fc694" xml:space="preserve">OK: leak raised to P0, reviewer read-only, bound live, exhaustion marked, malformed ticket isolated.</text>
+<text x="18" y="94" fill="#d7e1e4" xml:space="preserve"></text>
+<text x="18" y="114" fill="#56c2cb" xml:space="preserve">$ python run_checks.py</text>
+<text x="18" y="134" fill="#d7e1e4" xml:space="preserve">  langgraph: available</text>
+<text x="18" y="154" fill="#d7e1e4" xml:space="preserve"></text>
+<text x="18" y="174" fill="#6fc694" xml:space="preserve">  [ok] 01-loop-not-graph   0.01s  OK: 1 retry, verdict PASS, 4 chunks, 0 graph nodes.</text>
+<text x="18" y="194" fill="#6fc694" xml:space="preserve">  [ok] 02-sequential       0.40s  OK: 4 heterogeneous steps ran in order, notes tightened 731 -&gt; 558 cha</text>
+<text x="18" y="214" fill="#6fc694" xml:space="preserve">  [ok] 03-reviewer-loop    0.27s  OK: reject loop fired once then published; second scenario exhausted M</text>
+<text x="18" y="234" fill="#6fc694" xml:space="preserve">  [ok] 04-fanout-fanin     0.27s  OK: 5 branches answered, 1 isolated failure, report still produced.</text>
+<text x="18" y="254" fill="#6fc694" xml:space="preserve">  [ok] 05-judge-panel      0.27s  OK: worker reject loop fired once (A); plan-reject branch fired once a</text>
+<text x="18" y="274" fill="#6fc694" xml:space="preserve">  [ok] verify-topology     0.02s  All topologies match their documented design.</text>
+<text x="18" y="294" fill="#d7e1e4" xml:space="preserve"></text>
+<text x="18" y="314" fill="#d7e1e4" xml:space="preserve">  PASS=6</text>
+<text x="18" y="334" fill="#d7e1e4" xml:space="preserve"></text>
+<text x="18" y="354" fill="#6fc694" xml:space="preserve">  all checks passed</text>
+</svg>

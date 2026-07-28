@@ -90,6 +90,31 @@ You get three things: an **ASCII sketch** you can read in the terminal with noth
 
 Designs stay **text, never images** — text is the only form you can edit *and* Phase 4 can assert against. The moment a design becomes a PNG, verification breaks and the diagram starts drifting from the code.
 
+## Worked example — see it run
+
+[**examples/ticket-triage/**](examples/ticket-triage/) is a full walkthrough on a
+real-shaped problem: *"I want three agents — one labels tickets, one prioritises,
+one finds duplicates."*
+
+The ladder collapsed all three into **one writer plus one reviewer**, and the
+reviewer earned its place immediately:
+
+![demo run](docs/img/demo-run.svg)
+
+`attempts: 2` is the story. On the first pass the writer filed *"API returns
+other customers' data"* as **P2** — plausible, quiet, and wrong. The reviewer,
+seeing only the tickets and the assignments and never the writer's reasoning,
+flagged it as cross-account exposure that must be P0. The second pass fixed it.
+
+The walkthrough shows every phase: the scope questions, the ladder with each
+rung's verdict, the design with its state table and bounds, the **cost compared
+across rungs 2/3/5**, and the four Phase 4 assertions.
+
+```bash
+python examples/ticket-triage/triage.py            # the digest
+python examples/ticket-triage/triage.py --selftest # the assertions
+```
+
 ## Reference implementations
 
 Five runnable examples. All run offline with deterministic stub models — **no API key** — and every one asserts its own behaviour, so they cannot silently rot.
@@ -150,7 +175,10 @@ anyway, or `--python /other/bin/python` to run under a different interpreter.
 ```
 skill/orchestration-design/    skill source — edit here, then ./build.sh
 reference-implementation/      five runnable examples + verify_topology.py
+examples/ticket-triage/        full worked walkthrough, start to finish
 tools/mermaid_link.py          diagram -> pre-filled mermaid.live edit URL
+tools/term_svg.py              captured terminal output -> SVG for this README
+docs/img/                      generated screenshots (regenerate, never hand-edit)
 run_checks.py                  run every check; one command, one exit code
 orchestration-design.skill     packaged bundle (zip)
 build.sh                       package + install to ~/.claude/skills/

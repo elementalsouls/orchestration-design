@@ -62,6 +62,13 @@ def discover() -> list[dict]:
                        "needs": "langgraph"})
     checks.append({"name": "verify-topology",
                    "path": REF / "verify_topology.py", "needs": None})
+    # worked example + tools: anything runnable that is not checked will rot
+    checks.append({"name": "ticket-triage",
+                   "path": ROOT / "examples" / "ticket-triage" / "triage.py",
+                   "needs": None, "args": ["--selftest"]})
+    for tool in ("mermaid_link", "term_svg"):
+        checks.append({"name": f"tools/{tool}", "path": ROOT / "tools" / f"{tool}.py",
+                       "needs": None, "args": ["--selftest"]})
     return checks
 
 
@@ -85,7 +92,7 @@ def run_one(check: dict, python: str, available: dict[str, bool],
 
     start = time.monotonic()
     try:
-        p = subprocess.run([python, str(check["path"])],
+        p = subprocess.run([python, str(check["path"]), *check.get("args", [])],
                            capture_output=True, text=True, timeout=TIMEOUT)
         status = PASS if p.returncode == 0 else FAIL
         out = (p.stdout + p.stderr).strip().splitlines()
