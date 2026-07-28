@@ -65,15 +65,15 @@ Read `references/graph-design.md`. Produce exactly five parts:
 
 Do not go straight from design to code. Hand over, in one message:
 
-- the **Mermaid block**
-- the **node table**, **state table**, **bounds** and **cost estimate**
-- the **rung chosen and its trigger**
+1. an **ASCII sketch** of the flow — readable in the terminal with nothing installed. Skip it above ~8 nodes, where ASCII stops helping.
+2. the **Mermaid block** — the source of truth, and the only thing Phase 4 asserts against.
+3. a **pre-filled mermaid.live link**, so editing needs no copy-paste. `tools/mermaid_link.py` in this repo generates one from a diagram.
+4. the **node table**, **state table**, **bounds** and **cost estimate**
+5. the **rung chosen and its trigger**
 
-Then tell them: *paste the Mermaid into <https://mermaid.live> to move nodes, delete them, or re-route the edges.* Whatever they hand back is the source of truth — update the tables to match the edited diagram rather than arguing with it.
+Whatever they hand back is the source of truth — update the tables to match the edited diagram rather than arguing with it. The ASCII is a preview and may drift: **never assert against it**, and never let an image replace the Mermaid. Text is the only form a human can edit *and* Phase 4 can check.
 
 **Ask one specific question, not "does this look good?"** Ask *"which node would you delete?"* or *"is any of this state written by two things?"*. Open approval questions get "looks fine"; specific ones get real answers, and people cut more than they add once they can see the shape.
-
-**Keep the design as Mermaid text, not an image.** Text is the only form the human can edit *and* Phase 4 can assert against. The moment the design becomes a PNG or a drawing-tool file, verification breaks and the diagram starts drifting from the code.
 
 ### This is a hard stop
 

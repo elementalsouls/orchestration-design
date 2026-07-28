@@ -83,7 +83,9 @@ Two rules hold at every rung:
 
 ### The visual review gate
 
-Phase 2.5 exists so a human can see the architecture **before** any code is written. You get the design as Mermaid text, paste it into [mermaid.live](https://mermaid.live), drag nodes around or delete them, and hand it back. Your edited diagram becomes the spec.
+Phase 2.5 exists so a human can see the architecture **before** any code is written, and it is a **hard stop** — the skill ends its turn on the design rather than presenting a diagram and building anyway.
+
+You get three things: an **ASCII sketch** you can read in the terminal with nothing installed, the **Mermaid source**, and a **pre-filled [mermaid.live](https://mermaid.live) link** that opens the diagram already loaded — no copy-paste. Drag nodes around, delete what you don't want, hand it back. Your edited diagram becomes the spec. (`tools/mermaid_link.py` generates the link; the ASCII is a preview only and is never asserted against.)
 
 Designs stay **text, never images** — text is the only form you can edit *and* Phase 4 can assert against. The moment a design becomes a PNG, verification breaks and the diagram starts drifting from the code.
 
@@ -92,15 +94,14 @@ Designs stay **text, never images** — text is the only form you can edit *and*
 Five runnable examples. All run offline with deterministic stub models — **no API key** — and every one asserts its own behaviour, so they cannot silently rot.
 
 ```bash
-pip install -U langgraph                                  # for 02-05
-
-python reference-implementation/01-loop-not-graph/loop.py  # stdlib only
-python reference-implementation/02-sequential/graph.py
-python reference-implementation/03-reviewer-loop/graph.py
-python reference-implementation/04-fanout-fanin/graph.py
-python reference-implementation/05-judge-panel/graph.py
-python reference-implementation/verify_topology.py         # asserts all topologies
+pip install -U langgraph   # needed by 02-05; 01 and the verifier are stdlib only
+python run_checks.py       # runs all six, exits non-zero if any fail
 ```
+
+`run_checks.py` treats a missing dependency as a **failure**, not a skip — in CI
+a silently-skipped check is how green builds start lying. Pass `--allow-skip`
+when you want a fresh clone to stay green, or `--python /path/to/venv/bin/python`
+to run the checks under a specific interpreter.
 
 | Example | Pattern | What it demonstrates |
 |---|---|---|
@@ -145,6 +146,8 @@ python reference-implementation/verify_topology.py         # asserts all topolog
 ```
 skill/orchestration-design/    skill source — edit here, then ./build.sh
 reference-implementation/      five runnable examples + verify_topology.py
+tools/mermaid_link.py          diagram -> pre-filled mermaid.live edit URL
+run_checks.py                  run every check; one command, one exit code
 orchestration-design.skill     packaged bundle (zip)
 build.sh                       package + install to ~/.claude/skills/
 CLAUDE.md                      conventions for working on this repo

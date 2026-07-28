@@ -16,7 +16,7 @@ A toolkit that helps builders decide how much orchestration a piece of work need
 - `skill/orchestration-design/` — skill source:
   - `SKILL.md` — Track A (phases 0, 1, 2, 2.5, 3, 4) and Track B (audit). Keep under ~150 lines.
   - Phase 1 is a **six-rung ladder** (plain script → loop → loop+reviewer → panel → fan-out → durable). Default is rung 3. Climb only when a rung's named trigger is literally true.
-  - Phase 2.5 is a **visual review gate and a hard stop**: hand over the Mermaid block plus tables, ask one specific question ("which node would you delete?"), and **end the turn**. No implementation in the same turn. If running autonomously, label the result DESIGN NOT REVIEWED rather than treating absence as approval.
+  - Phase 2.5 is a **visual review gate and a hard stop**: hand over an ASCII sketch, the Mermaid block, a pre-filled mermaid.live link (`tools/mermaid_link.py`), and the tables; ask one specific question ("which node would you delete?"); then **end the turn**. The ASCII is a preview and is never asserted against. No implementation in the same turn. If running autonomously, label the result DESIGN NOT REVIEWED rather than treating absence as approval.
   - Phase 4 is **rung-aware**. Rungs 4–6 assert the edge sets match (`verify_topology.py`). Rungs 1–3 emit no diagram, so they assert behaviour instead: reviewer is read-only, the bound is live, the exhaustion terminal is reachable and marked, failure is isolated.
   - `references/evidence.md` — the research behind the two rules and the ladder
   - `references/graph-design.md` — the runtime-free design method (Phase 2 core)
@@ -31,6 +31,8 @@ A toolkit that helps builders decide how much orchestration a piece of work need
   - `04-fanout-fanin/` — Pattern C, Send fan-out with per-branch failure isolation
   - `05-judge-panel/` — Pattern D, multi-reviewer panel + bounded plan-review loop
   - `verify_topology.py` — asserts each README's design diagram matches its compiled one
+- `run_checks.py` — runs every check above; one command, one exit code. Missing deps FAIL by default.
+- `tools/mermaid_link.py` — turns a Mermaid diagram into a pre-filled mermaid.live edit URL (Phase 2.5)
 
 ## Conventions (apply to ALL graph code in this repo)
 - LangGraph v1.0 API only: StateGraph, START/END, Send, Command, add_conditional_edges, `add_node(..., destinations=(...))`. Never set_entry_point/set_finish_point/ToolExecutor.
@@ -50,10 +52,10 @@ Edit files under `skill/orchestration-design/`, then run `./build.sh` — it rep
 
 ## Testing
 ```bash
-python reference-implementation/01-loop-not-graph/loop.py     # stdlib only
-for d in 02-sequential 03-reviewer-loop 04-fanout-fanin 05-judge-panel; do
-  python reference-implementation/$d/graph.py
-done
-python reference-implementation/verify_topology.py            # all topologies
+python run_checks.py                       # all six checks, one exit code
+python run_checks.py --selftest            # the runner's own assertions
+python tools/mermaid_link.py --selftest    # URL payload round-trips
 ```
-All must exit 0 offline with stub models. `pip install -U langgraph` if missing (verified against 1.2.10).
+All must exit 0 offline with stub models. Missing dependencies FAIL by default —
+`pip install -U langgraph` (verified against 1.2.10), or `--allow-skip` locally.
+Use `--python /path/to/venv/bin/python` to run the checks under another interpreter.
