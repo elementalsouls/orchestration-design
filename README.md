@@ -48,7 +48,86 @@ That packages the skill and copies it to `~/.claude/skills/orchestration-design/
 
 To uninstall: `rm -rf ~/.claude/skills/orchestration-design`.
 
-**It fires on symptoms, not jargon.** You don't need the words "graph" or "orchestration" — try *"my pipeline is a mess"*, *"one bad step kills the whole run"*, or *"it re-runs everything on failure"*.
+## How to use it
+
+### It fires on its own
+
+Claude Code keeps every installed skill's `description` in context and matches it
+against what you type. You don't invoke anything — you just describe your problem
+and the skill loads itself.
+
+**You don't need the vocabulary.** These all trigger it:
+
+```
+"my pipeline is a mess"
+"one bad step kills the whole run"
+"it re-runs everything from scratch when it fails"
+"these steps should run in parallel"
+"this agent has grown too complex"
+"it keeps looping forever"
+"our costs exploded last month"
+"should I split this script into separate services?"
+```
+
+So do the obvious ones — *build a multi-agent system*, *agent workflow*, *ETL*,
+*batch job*, *LangGraph*, *fan-out*, *supervisor/worker*, *RAG ingestion*,
+*CI/CD flow*.
+
+### Calling it deliberately
+
+```
+/orchestration-design
+/orchestration-design triage 500 PDF contracts and extract renewal dates
+```
+
+Or just name it in a sentence: *"use orchestration-design for this."* Worth doing
+when you want the full process on something it might not have flagged on its own —
+an architecture review, or a design you already half-built.
+
+### What happens next
+
+**1 · It asks about your problem before proposing anything.** Volume, cadence, and
+critically *which failure actually hurts you* — a wrong answer reaching a customer
+is a different design from a crashed nightly batch. It also checks whether your
+real problem is orchestration at all; a vague prompt or missing retrieval gets
+named as such instead of buried under nodes.
+
+**2 · It walks the ladder out loud** and names the rung plus the trigger that
+justified it. *"Rung 3, because correctness can't be asserted mechanically"* is a
+decision you can argue with. *"It's complex, so a graph"* is not, and it won't say
+that.
+
+**3 · It stops and shows you the design.** An ASCII sketch you can read in the
+terminal, the Mermaid source, a pre-filled [mermaid.live](https://mermaid.live)
+link, the state table with one owner per field, the bounds, and the cost compared
+across adjacent rungs. **Then it ends its turn and waits.** Delete nodes, re-route
+edges, hand the diagram back — your version becomes the spec.
+
+**4 · It builds on your stack**, not its favourite one. Python, TypeScript, plain
+code with no framework, Claude Code subagents, or a durable workflow engine.
+
+**5 · It proves the build matches the design** with assertions, not by eye — the
+reviewer really is read-only, the bound really fires, the counts really add up.
+
+### Three things that might surprise you
+
+**It often tells you not to build it.** Refusing is the most common correct
+outcome, not a failure. If your five-box diagram collapses to one loop and a
+reviewer, that's the skill working.
+
+**It stops mid-task and waits.** Phase 2.5 is a hard stop by design. Say *"just
+build it"* in your request if you want it to skip the gate.
+
+**It asks one pointed question, not "look good?"** Usually *"which node would you
+delete?"* — because open approval questions get "fine" and specific ones get real
+answers.
+
+### A worked run
+
+[**examples/ticket-triage/**](examples/ticket-triage/) has the whole thing on one
+problem: the request, the scope questions, every rung's verdict, the design and
+its cost comparison, the five assertions, and the real output — including the
+moment the reviewer caught a security ticket filed at the wrong priority.
 
 ## The ladder
 
@@ -158,7 +237,16 @@ anyway, or `--python /other/bin/python` to run under a different interpreter.
 
 **The research will age.** Core papers are 2025–2026. If models get dramatically better at coordinating, the loop-first default weakens. `evidence.md` is dated so you can see the shelf life, and it separates strong evidence (controlled experiments) from weaker (single-company production reports).
 
-**Tested end to end once.** On one real task it behaved correctly — refused the graph, routed to a plain script, and its own verification step caught two real bugs in what it had just built. That's one trial, not a track record.
+**Tested end to end four times.** On four real tasks it behaved correctly, and the ladder discriminated rather than giving the same answer every time:
+
+| Task | Rung | Outcome |
+|---|---|---|
+| Validate 77 installed Claude skills | 1 · plain script | Gate refused a graph. Verification then caught two false-positive bugs in the tool it had just written |
+| Generate release notes from git history | 3 · loop + reviewer | Reviewer caught a hallucinated "CI pipeline" claim that no commit supported |
+| Replace six manual test commands | 1 · plain script | Gate refused again. Found 4 of the 6 documented commands were silently unrunnable |
+| Triage support tickets | 3 · loop + reviewer | Reviewer caught a cross-account data leak filed P2 instead of P0 |
+
+Four trials is not a track record. But it was enough to find **four defects in the skill itself** — a reducer footgun in `plain-code.md`, a rung-5 trigger whose "or" swallowed the rule, cost presented as a bare number, and a missing count assertion. All four came from *using* it. None would have surfaced from re-reading it.
 
 ## Sources
 
