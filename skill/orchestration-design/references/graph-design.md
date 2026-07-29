@@ -78,9 +78,15 @@ Walk the list and name the ones you need:
 The last two are the ones people forget to bound at all, because a human is
 "obviously" going to answer. They frequently do not.
 
+**This is a menu, not a checklist.** It lists what a loop-back can be *for*, so
+you can name the one you need and bound it correctly. It is not an invitation to
+implement five. Most designs need one cycle; some need two. If you find yourself
+wanting three, that is a signal the design is doing too much, not that you have
+been thorough.
+
 Rules:
 
-- **Aim for one conditional edge.** Every branch point multiplies the paths you must test. Two conditionals with two outcomes each is four paths.
+- **Aim for as few conditional edges as the work needs — one is ideal.** Every branch point multiplies the paths you must test. Two conditionals with two outcomes each is four paths.
 - **Every loop-back edge is a conditional edge**, and it must be bounded (see §4).
 - **Every branch must be reachable.** A path that no test ever exercises is undemonstrated. If you document a "reject" edge, prove it fires.
 - **Terminal choice matters.** When bounds are exhausted, decide deliberately: ship best-effort with a caveat, or route to a human/park node. Shipping unreviewed work is sometimes correct and sometimes a data-integrity bug. Choose on purpose.
@@ -120,7 +126,7 @@ A graph is many loops, sometimes running in parallel. A weak verifier now burns 
 
 1. **Attempt counter** — in state, incremented by the owner, checked by the router on every loop-back edge.
 2. **Global step limit** — a hard cap on total node executions for the whole run. The backstop for a counter you forgot.
-3. **Spend budget** — a `tokens_spent`-style field accumulated by every model-calling node, checked by at least one router, which routes to a terminal when exceeded.
+3. **Spend budget** — a `tokens_spent`-style field accumulated by every model-calling node, checked by at least one router, which routes to a terminal when exceeded. **Where nothing costs tokens, bound whatever does cost**: HTTP requests, pages fetched, rows written, wall clock. A design with no models is not a design that cannot run away — it just runs away on someone else's rate limit instead of your bill.
 
 4. **Per-agent-node bounds.** Any node of kind `agent` (see §1) carries its own iteration cap and spend budget. The outer three do **not** constrain what happens inside it — this is the most common way a design that passes this checklist still runs away.
 
