@@ -7,7 +7,7 @@ Choose this target when: Python, LLM orchestration, real fan-out or durable stat
 Current as of mid-2026. Install: `pip install -U langgraph langchain`.
 Breaking changes vs old tutorials: `set_entry_point()`/`set_finish_point()` are gone — use `add_edge(START, ...)` / `add_edge(..., END)`. `ToolExecutor` → `ToolNode`.
 
-Runnable versions of every pattern below live in `reference-implementation/`: `02-sequential` (A), `03-reviewer-loop` (B), `04-fanout-fanin` (C), `05-judge-panel` (D). All run offline with stub models and assert their own behaviour.
+Every pattern below is written to run offline with deterministic stub models and assert its own behaviour — build them that way, so they cannot silently rot.
 
 ## Contents
 1. Core imports & state schema

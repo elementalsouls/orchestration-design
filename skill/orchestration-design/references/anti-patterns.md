@@ -80,7 +80,7 @@ Use when something is already built and behaving badly. Each entry starts from w
 
 ### "Five nodes for a summarizer"
 **Diagnosis:** the canonical over-build: fetch → chunk → summarize → review → format. Four of these are functions and the fifth grades itself.
-**Fix:** one loop, a fetch tool, chunking as a function, a real verifier. See `reference-implementation/01-loop-not-graph/`.
+**Fix:** one loop, a fetch tool, chunking as a function, a real verifier.
 
 ### "We adopted a framework for three sequential steps"
 **Diagnosis:** same error as building an unnecessary graph, one level up.

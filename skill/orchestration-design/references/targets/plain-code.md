@@ -180,7 +180,7 @@ def test_loop_terminates_when_reviewer_always_fails():
     assert s.attempts == MAX_ATTEMPTS   # bound is live, not decorative
 ```
 
-These two tests catch the two failure modes that actually bite. `reference-implementation/01-loop-not-graph/loop.py` is a complete worked example of this target.
+These two tests catch the two failure modes that actually bite.
 
 ## When to graduate
 

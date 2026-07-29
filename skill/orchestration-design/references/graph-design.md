@@ -181,7 +181,7 @@ If a lower layer is broken, fixing it beats adding nodes. Orchestration does not
 | More than ~7 nodes | Several are steps, not nodes. Run the merge test. |
 | Node names that are verbs of one action (`chunk`, `parse`, `format`) | These are functions. Inline them. |
 | Two conditional edges early in the design | The routing is doing work the state should do. |
-| No node without a model call | The deterministic work is hiding inside prompts. |
+| **Every** node calls a model | Deterministic work is hiding inside prompts. Note the direction: a design where **no** node calls a model is not a smell at all — that is level 1, and it is the most reliable thing you can ship. |
 | A field with no obvious owner | The design is not finished. |
 | Reviewer and producer are the same model with a different prompt | Not an independent check. Rubber stamp. |
 | Bounds "to be added later" | They will not be. They are load-bearing. |

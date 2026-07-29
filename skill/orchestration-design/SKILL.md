@@ -47,7 +47,7 @@ Then run the **five-layer check**: prompt → context → harness → loop → o
 
 **What does NOT justify climbing:** task difficulty, step count, "feels complex", "could run in parallel", or wanting the design to look sophisticated. Parallelism buys wall-clock time and context isolation; at equal budget it does not buy accuracy. **Independence is a precondition for level 5, not a trigger** — nearly every batch has independent items, so treating that as sufficient sends everything to fan-out. Context pressure is the trigger; independence only decides whether fan-out is *safe*. Check what splitting costs too: any judgement needing to see items together — duplicates, ranking, dedupe — is destroyed once each branch sees one item.
 
-Name the level and its trigger out loud: *"Level 3, because output quality can't be asserted mechanically"* is a decision, *"it's complex, so a graph"* is not. **Stopping at level 1 or 2 is a successful use of this skill** and the most common correct outcome — `reference-implementation/01-loop-not-graph/` is the worked version.
+Name the level and its trigger out loud: *"Level 3, because output quality can't be asserted mechanically"* is a decision, *"it's complex, so a graph"* is not. **Stopping at level 1 or 2 is a successful use of this skill** and the most common correct outcome.
 
 ## Phase 2 — Design on paper (runtime-free)
 
@@ -61,13 +61,15 @@ Read `references/graph-design.md`. Produce exactly five parts:
 4. **Bounds** — an attempt counter on every loop-back, a global step limit, and a spend budget a router actually reads.
 5. **Cost, compared** — worst case for the level you chose **and the levels either side of it**. A single number does not inform the decision; the delta does. If the level below is nearly as cheap, you climbed too far. If the level above costs more and buys nothing, say so out loud. Method in `references/graph-design.md`.
 
+**Landed on level 1 or 2? Do the short version.** Produce parts 1, 2, 3 and 4 — nodes with kinds, edges, state ownership, bounds — and for part 5 write one line: *"zero model calls, zero tokens"*, then cost **only the level above**, to show what climbing would buy. Skip the full three-way table; there is nothing below you. Do not fill in token arithmetic for a design that makes no model calls — say so plainly instead. This is the most common outcome, and it should be the lightest paperwork in the document, not the heaviest.
+
 ## Phase 2.5 — Show the human the design
 
 Do not go straight from design to code. Hand over, in one message:
 
 1. an **ASCII sketch** of the flow — readable in the terminal with nothing installed. Skip it above ~8 nodes, where ASCII stops helping.
 2. the **Mermaid block** — the source of truth, and the only thing Phase 4 asserts against.
-3. a **pre-filled mermaid.live link**, so editing needs no copy-paste. `tools/mermaid_link.py` in this repo generates one from a diagram.
+3. a **mermaid.live link** if you can build one — the editor encodes its whole state as zlib-compressed JSON, base64url-encoded, in the URL fragment after `#pako:`. If that is awkward, just tell them to paste the block into <https://mermaid.live>; the point is that editing costs them nothing.
 4. the **node table**, **state table**, **bounds**, and the **cost comparison** across adjacent levels
 5. the **level chosen and its trigger**
 
@@ -111,12 +113,12 @@ Deliver something runnable, plus a README carrying the approved design diagram �
 
 Run it. Then prove it matches the design that was approved in Phase 2.5. **How you prove it depends on the level** — most designs stop at levels 1–3, which emit no diagram at all, so topology comparison does not apply there.
 
-**Levels 4–6 — a framework compiled a graph.** Parse the approved Mermaid and the emitted `draw_mermaid()` output into edge sets and **assert they are equal**. Comparing two nine-edge diagrams by eye is exactly the check a tired builder skips. This repo ships a working version as `reference-implementation/verify_topology.py`. Then write assertion 5 below — a matching topology says nothing about whether parallel branches lost results.
+**Levels 4–6 — a framework compiled a graph.** Parse the approved Mermaid and the emitted `draw_mermaid()` output into edge sets and **assert they are equal**. Comparing two nine-edge diagrams by eye is exactly the check a tired builder skips, so make it a test: strip node shapes and edge labels, reduce both diagrams to sets of `(source, target)` pairs, and assert equality. Then write assertion 5 below — a matching topology says nothing about whether parallel branches lost results.
 
-**Levels 1–3 — plain code, no diagram to emit.** There is no topology to compare, so assert the *behaviour* the design promised. Write these five, and run them:
+**Levels 1–3 — plain code, no diagram to emit.** There is no topology to compare, so assert the *behaviour* the design promised. Write these, and run them. **At levels 1–2 assertion 1 does not apply — there is no reviewer.** Skip it and say so; do not invent a reviewer to have something to assert.
 
-1. **The reviewer is read-only.** Snapshot the artifact, run the reviewer, assert it is unchanged. Proves it, rather than trusting the prompt.
-2. **The bound is live.** Substitute a reviewer that never passes; assert the run stops at `MAX_ATTEMPTS` instead of looping forever.
+1. **The reviewer is read-only** *(levels 3+ only)*. Snapshot the artifact, run the reviewer, assert it is unchanged. Proves it, rather than trusting the prompt.
+2. **Every bound is live.** Force the condition each one guards — a reviewer that never passes, a source that always fails, a counter that never satisfies — and assert the run stops at the cap instead of looping forever. At level 1 this is your retry and timeout caps; they still need proving.
 3. **The exhaustion terminal is reachable and marked.** Assert that run produces the caveat, park, or flag you designed — silently shipping unreviewed work is the bug.
 4. **Failure is isolated.** Where the design claims one item can fail without killing the rest, force one to fail and assert the others still complete.
 5. **The counts add up.** One output per input, no duplicate ids, successes + failures = total. Silent duplication and silent loss are what a wrong reducer or a missing fan-in reducer produce, and **no other assertion here notices** — the run looks fine and the data is wrong.
