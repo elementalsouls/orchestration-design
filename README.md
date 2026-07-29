@@ -131,6 +131,8 @@ moment the reviewer caught a security ticket filed at the wrong priority.
 
 ## The ladder
 
+Phase 1 opens with a question the ladder depends on: **can you enumerate the valid paths?** If the route depends on what the work turns up as it goes — open-ended research is the classic case — structure is the wrong tool, and you want an agent with good tools rather than a graph. The ladder assumes a knowable route.
+
 Phase 1 is the core of the skill. **The ladder is six levels of orchestration, ordered simplest first — a level describes the shape of the *solution*, not the difficulty of the *task*.** Start at level 1, stop at the first level that holds, and climb only when that level's named trigger is **literally true**.
 
 | Level | Shape | Climb past it only when |

@@ -30,7 +30,9 @@ Then run the **five-layer check**: prompt → context → harness → loop → o
 
 ## Phase 1 — Pick the level (the ladder)
 
-**The ladder is six levels of orchestration, ordered simplest first.** A level describes the shape of the *solution*, never the difficulty of the *task*. Start at level 1. **Stop at the first level that holds.** Climb only when that level's named trigger is *literally true* — not because the task feels hard.
+**First: can you enumerate the valid paths?** If you can name the stages the work moves through — classify then answer, inspect then edit, draft then approve — the ladder applies. If you cannot, because the route depends on what the work turns up as it goes, **structure is the wrong tool**. Give one agent good tools, memory and a stopping condition, and let the path emerge. Forcing an open-ended task down fixed paths makes it worse, not safer — teams have migrated open-ended research *away* from fixed graphs for exactly this reason. Everything below assumes a knowable route.
+
+**The ladder is six levels of orchestration, ordered simplest first.** A level describes the shape of the *solution*, never the difficulty of the *task*. **Pick a level per stage, not per system** — most real designs are mixed (a deterministic fetch, a level-3 judgement), and the system's headline level is the highest any stage needs. Start at level 1. **Stop at the first level that holds.** Climb only when that level's named trigger is *literally true*.
 
 | Level | Shape | Climb past it only when |
 |---|---|---|
@@ -43,13 +45,9 @@ Then run the **five-layer check**: prompt → context → harness → loop → o
 
 **Level 3 is the default for serious work.** A read-only reviewer is the single highest-value addition — but note it *improves* a design without *justifying* a bigger one. Frameworks with explicit verifiers still failed often.
 
-**What does NOT justify climbing:** task difficulty, number of steps, "feels complex", "could run in parallel", or wanting the design to look sophisticated. Parallelism buys wall-clock time and context isolation; at equal budget it does not buy accuracy.
+**What does NOT justify climbing:** task difficulty, step count, "feels complex", "could run in parallel", or wanting the design to look sophisticated. Parallelism buys wall-clock time and context isolation; at equal budget it does not buy accuracy. **Independence is a precondition for level 5, not a trigger** — nearly every batch has independent items, so treating that as sufficient sends everything to fan-out. Context pressure is the trigger; independence only decides whether fan-out is *safe*. Check what splitting costs too: any judgement needing to see items together — duplicates, ranking, dedupe — is destroyed once each branch sees one item.
 
-**Independence is a precondition for level 5, not a trigger.** Nearly every batch has independent items, so treating independence as sufficient sends everything to fan-out — the opposite of what the evidence supports. Context pressure is the trigger; independence only decides whether fan-out is *safe*. And check what splitting costs you: if any judgement needs to see items together — spotting duplicates, ranking, deduping — fan-out destroys it, because each branch sees one item.
-
-Name the level and its trigger out loud. *"Level 3, because output quality can't be asserted mechanically"* is a decision. *"It's complex, so a graph"* is not.
-
-**Stopping at level 1 or 2 is a successful use of this skill** and the most common correct outcome. `reference-implementation/01-loop-not-graph/` is the worked version.
+Name the level and its trigger out loud: *"Level 3, because output quality can't be asserted mechanically"* is a decision, *"it's complex, so a graph"* is not. **Stopping at level 1 or 2 is a successful use of this skill** and the most common correct outcome — `reference-implementation/01-loop-not-graph/` is the worked version.
 
 ## Phase 2 — Design on paper (runtime-free)
 
@@ -57,7 +55,7 @@ Name the level and its trigger out loud. *"Level 3, because output quality can't
 
 Read `references/graph-design.md`. Produce exactly five parts:
 
-1. **Nodes** — only real specialties. Each needs a job a single loop couldn't hold: a different model, a different toolset, or a read-only reviewer role. Steps you could inline are not nodes.
+1. **Nodes** — only real specialties. Each needs a job a single loop couldn't hold: a different model, a different toolset, or a read-only reviewer role. Steps you could inline are not nodes. Record each node's **kind** — `fixed` (no model), `model` (one call), or `agent` (loops with tools until done) — because an `agent` node **must declare its own bounds**; the outer loop does not constrain it.
 2. **Edges** — routing as a Mermaid diagram: what's sequential, what fans out, what fans in, where the loop-back lives. Aim for one conditional edge.
 3. **State schema** — every field: type, reducer (replace vs. append), and **which single node may write it**. Fan-in fields must have append reducers. This table is how rule 1 gets enforced.
 4. **Bounds** — an attempt counter on every loop-back, a global step limit, and a spend budget a router actually reads.

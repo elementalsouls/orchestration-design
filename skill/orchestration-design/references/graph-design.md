@@ -24,7 +24,30 @@ If yes, it is a step, not a node — inline it. A node earns its existence throu
 
 **Determinism test:** a node that does not call a model should be a plain function. Parsing, chunking, formatting, arithmetic, and validation-by-schema are not agent work. Many designs shrink by half on this test alone.
 
-Write each node as one line: `name — job, in one sentence.`
+### Every node has a kind — record it
+
+"Function or node" is too coarse. Three kinds behave differently enough that the
+distinction has to be in the design, not discovered in production:
+
+| Kind | What it is | Cost | Needs its own bounds? |
+|---|---|---|---|
+| **fixed** | Deterministic code. No model | ~0 | No |
+| **model** | Exactly one model call in, one result out | Predictable, one call | No |
+| **agent** | An open-ended run: the node loops with tools until *it* decides it is done | **Unbounded by default** | **Yes — always** |
+
+A node can be a full agent run, not just code or a single call. That is useful —
+it is how levels nest — and it is where runaways hide.
+
+**The trap:** an `agent` node inside a bounded loop is *not* bounded by the outer
+loop. Your attempt counter caps how many times the outer loop calls it; it says
+nothing about how many tool calls happen inside. One outer attempt can burn the
+entire budget. A design that passes the bounds checklist can still run away.
+
+**The rule:** every `agent` node declares its own iteration cap and spend budget,
+and the design records them separately from the outer loop's. If you cannot state
+what stops it, it is not a node yet.
+
+Write each node as one line: `name (kind) — job, in one sentence.`
 
 ## 2. Edges
 
@@ -37,6 +60,23 @@ Three edge shapes cover almost everything:
 | **Sequential** | `a → b` — b needs a's output. |
 | **Fan-out / fan-in** | one branch per independent item, all rejoining at a barrier. |
 | **Conditional** | a router function reads state and returns which node comes next. |
+
+### Which cycles does your design need?
+
+Real systems are almost never acyclic. Most designs assume the only loop-back is
+"reviewer rejected, revise" — there are five, and **each is bounded differently**.
+Walk the list and name the ones you need:
+
+| Cycle | Fires when | Bounded by |
+|---|---|---|
+| **Retry** | A tool call or fetch failed transiently | Attempt cap **plus backoff** — a tight retry loop is a self-inflicted outage |
+| **Revise** | A reviewer rejected the work | Attempt counter, then a deliberate exhaustion terminal |
+| **Gather** | The agent does not yet have enough context | An explicit *sufficiency test* — "enough" must be a condition, not a vibe, or this never terminates |
+| **Ask the user** | Required information is missing | A timeout **and** a default for when no answer comes |
+| **Human pause** | Work needs approval before continuing | Persistence — the run must survive the wait, which usually means level 6 |
+
+The last two are the ones people forget to bound at all, because a human is
+"obviously" going to answer. They frequently do not.
 
 Rules:
 
@@ -81,6 +121,8 @@ A graph is many loops, sometimes running in parallel. A weak verifier now burns 
 1. **Attempt counter** — in state, incremented by the owner, checked by the router on every loop-back edge.
 2. **Global step limit** — a hard cap on total node executions for the whole run. The backstop for a counter you forgot.
 3. **Spend budget** — a `tokens_spent`-style field accumulated by every model-calling node, checked by at least one router, which routes to a terminal when exceeded.
+
+4. **Per-agent-node bounds.** Any node of kind `agent` (see §1) carries its own iteration cap and spend budget. The outer three do **not** constrain what happens inside it — this is the most common way a design that passes this checklist still runs away.
 
 Then decide the **exhaustion terminal** explicitly (see §2) and make sure the run tells you it happened. A result that silently shipped without passing review is worse than a loud failure.
 

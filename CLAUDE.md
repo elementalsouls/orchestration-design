@@ -15,7 +15,8 @@ A toolkit that helps builders decide how much orchestration a piece of work need
 - `orchestration-design.skill` — packaged Claude skill (zip). Source of truth is `skill/`.
 - `skill/orchestration-design/` — skill source:
   - `SKILL.md` — Track A (phases 0, 1, 2, 2.5, 3, 4) and Track B (audit). Keep under ~150 lines.
-  - Phase 1 is a **six-level ladder** (plain script → loop → loop+reviewer → panel → fan-out → durable). Default is level 3. Climb only when a level's named trigger is literally true.
+  - Phase 1 opens with a **pre-ladder question — can you enumerate the valid paths?** If not, structure is the wrong tool; use an agent harness and let the path emerge. The ladder assumes a knowable route.
+  - Phase 1 is then a **six-level ladder** (plain script → loop → loop+reviewer → panel → fan-out → durable). Default is level 3. Climb only when a level's named trigger is literally true. **Levels are picked per stage, not per system** — the headline level is the highest any stage needs.
   - Phase 2.5 is a **visual review gate and a hard stop**: hand over an ASCII sketch, the Mermaid block, a pre-filled mermaid.live link (`tools/mermaid_link.py`), and the tables; ask one specific question ("which node would you delete?"); then **end the turn**. The ASCII is a preview and is never asserted against. No implementation in the same turn. If running autonomously, label the result DESIGN NOT REVIEWED rather than treating absence as approval.
   - Phase 4 is **level-aware**. Levels 4–6 assert the edge sets match (`verify_topology.py`). Levels 1–3 emit no diagram, so they assert behaviour instead: reviewer is read-only, the bound is live, the exhaustion terminal is reachable and marked, failure is isolated.
   - `references/evidence.md` — the research behind the two rules and the ladder
