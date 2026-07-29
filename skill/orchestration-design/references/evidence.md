@@ -129,6 +129,50 @@ writer, helpers that return judgement.
 
 ---
 
+## 6. The graph vendor says loops are graphs, and moved its own flagship off a graph
+
+**LangChain, "3 Years of Graph Engineering with LangGraph"** (22 July 2026).
+*Strength: practitioner experience report. No benchmarks, no controlled comparison,
+and the author sells the graph framework. Weigh it like the Cognition posts, not
+like Tran & Kiela.*
+
+Two passages are worth having anyway, because both cut against the author's interest.
+
+**On the framing this whole skill rests on:**
+
+> "loops are simple graphs. Loop engineering isn't an alternative to graphs, so
+> much as a simple version of them... a loop is just a directed, cyclic graph."
+
+That is the same claim as this skill's opening line, arrived at independently by
+the people selling graphs. It is why "loop vs. graph" is a false choice: the
+question was never which one, it is how many writers and who decides routing.
+
+**On migrating away from graphs:**
+
+> "We built early deep research on predefined LangGraph workflows, then moved to a
+> more agentic core loop. GPT Researcher, a popular deep research implementation,
+> made the same move, swapping its graph-shaped multi-agent pipeline for Deep
+> Agents so planning, delegation, and context management emerge in the harness
+> rather than being hardcoded in the graph."
+
+Two independent teams migrated graph → loop, reported by the graph vendor. An
+admission against interest is worth more than a claim in favour of one.
+
+**And the reason, which the ladder had been missing entirely:**
+
+> "Some tasks are more agentic by nature, and forcing them into deterministic
+> paths is the wrong move. In these cases, you don't want to represent the system
+> as a graph but rather just use an agent harness."
+
+This is a **different axis from every other trigger in the ladder**. All the
+others measure load — judgement, assertability, context pressure, durability.
+This one asks whether the route is knowable at all. A task can be heavy on every
+load dimension and still be wrong to structure, because you cannot enumerate
+paths that depend on what the work turns up as it goes.
+
+**Not cited from this article:** its 65M-downloads-per-month figure. Adoption is
+not correctness, and citing it would weaken everything above.
+
 ## What this means for the gate
 
 1. **Loop-first is the evidence-backed default,** not a stylistic preference. At equal
@@ -144,6 +188,9 @@ writer, helpers that return judgement.
    still failed often.
 6. **Compare at equal token budget or you are measuring your own spend.** If a graph is
    pitched against a loop, match the budget before believing the delta.
+7. **Ask whether the route is knowable before applying the ladder at all.** Every other
+   trigger measures load; this one asks whether you can enumerate the paths. If you
+   cannot, no level is correct — use an agent harness and let the path emerge (§6).
 
 ## Honest counterweight
 
