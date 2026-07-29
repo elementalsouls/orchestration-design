@@ -4,7 +4,7 @@
 Replaces the six manual commands that used to live in HANDOFF_PROMPT.md.
 
 Designed with the orchestration-design skill:
-  Phase 1  rung 1 (plain script). The climb trigger — "needs judgement a rule
+  Phase 1  level 1 (plain script). The climb trigger — "needs judgement a rule
            cannot encode" — is false. Exit codes are the entire signal.
   Phase 2  discover -> run_one (per check) -> report. No models, no loop-back,
            so no attempt counter and no spend budget. Only bound that applies
@@ -172,9 +172,9 @@ def main(argv: list[str]) -> int:
 
 # ------------------------------------------------------------- selftest -----
 def _selftest() -> int:
-    """Phase 4 for rung 1: assert the behaviour the design promised.
+    """Phase 4 for level 1: assert the behaviour the design promised.
 
-    Assertion 1 (reviewer is read-only) does not apply — rung 1 has no
+    Assertion 1 (reviewer is read-only) does not apply — level 1 has no
     reviewer. The other three do.
     """
     import tempfile, textwrap

@@ -25,7 +25,7 @@ design: the reviewer's only job is catching under-prioritisation.
 
 ## Phase 1 — the ladder
 
-| Rung | Verdict |
+| Level | Verdict |
 |---|---|
 | 1 · Plain script | **Climb.** Keyword rules can label some tickets, but "how severe is this really" is judgement a rule cannot encode |
 | 2 · Loop | **Climb.** Schema validity is assertable (`priority ∈ P0..P3`); *correctness* of a priority is not. And a wrong priority is the failure that hurts |
@@ -94,19 +94,19 @@ flowchart TD
 `MAX_ATTEMPTS = 3` · `BUDGET_TOKENS = 20_000`, both in the loop condition ·
 on exhaustion the digest ships **marked `UNREVIEWED`** rather than silently.
 
-### Cost — and why rung 3 rather than 5
+### Cost — and why level 3 rather than 5
 
 The number the skill makes you produce *before* building. It is only meaningful
 as a comparison, so here are all three options for the same 12 tickets:
 
 | Option | Arithmetic | Worst case | Buys you |
 |---|---|---|---|
-| Rung 2 — loop, no reviewer | 1 × 2.5k | ~2.5k | — |
-| **Rung 3 — chosen** | 2 rounds × (2.5k triage + 1.5k review) | **~8k typical, 12k worst** | the leak gets caught |
-| Rung 5 — fan-out per ticket | 12 × 2 × (400 + 300) | ~17k | **nothing** — and loses duplicate detection |
+| Level 2 — loop, no reviewer | 1 × 2.5k | ~2.5k | — |
+| **Level 3 — chosen** | 2 rounds × (2.5k triage + 1.5k review) | **~8k typical, 12k worst** | the leak gets caught |
+| Level 5 — fan-out per ticket | 12 × 2 × (400 + 300) | ~17k | **nothing** — and loses duplicate detection |
 
-Rung 3 costs ~3× the bare loop and buys the one thing that matters: the leak
-gets caught. Rung 5 costs *more* than rung 3 and buys nothing here — the
+Level 3 costs ~3× the bare loop and buys the one thing that matters: the leak
+gets caught. Level 5 costs *more* than level 3 and buys nothing here — the
 tickets fit in one context, so splitting them only loses cross-ticket
 information (you can't spot duplicates if each agent sees one ticket).
 
@@ -117,7 +117,7 @@ At 100 tickets/day this is roughly **$0.05/day** on current pricing.
 `plain-code.md`. Two model calls and one conditional edge do not justify a
 framework. ~200 lines of Python, no dependencies.
 
-## Phase 4 — verification (rungs 1–3: assert behaviour, not topology)
+## Phase 4 — verification (levels 1–3: assert behaviour, not topology)
 
 All five assertions, run by `--selftest`:
 

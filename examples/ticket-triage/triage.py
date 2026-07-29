@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Support ticket triage — rung 3: one writer, one read-only reviewer.
+"""Support ticket triage — level 3: one writer, one read-only reviewer.
 
 The request that produced this looked like it needed three agents:
 a labeller, a prioritiser, and a duplicate-detector. The ladder collapsed it
@@ -211,7 +211,7 @@ def run(path: Path = HERE / "tickets.json") -> State:
 
 # ------------------------------------------------------------- selftest -----
 def _selftest() -> int:
-    """Phase 4 at rung 3 — assert behaviour, not topology."""
+    """Phase 4 at level 3 — assert behaviour, not topology."""
     global review_model
     s = run()
 

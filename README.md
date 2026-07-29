@@ -30,7 +30,7 @@ It's an opinionated advisor that interrupts you *before* you write the wrong thi
 
 > Fetching is a tool call. Chunking is a `for` loop. Formatting is a template. That's three functions, not three agents. And your "reviewer" is the same model grading its own homework, so it will approve almost anything.
 >
-> What you want is one agent with a fetch tool and one *independent* checker. That's rung 3 of 6. Here's the design — change anything before I build it?
+> What you want is one agent with a fetch tool and one *independent* checker. That's level 3 of 6. Here's the design — change anything before I build it?
 
 You ship in an afternoon instead of a week, and you can debug it with a print statement.
 
@@ -92,15 +92,15 @@ is a different design from a crashed nightly batch. It also checks whether your
 real problem is orchestration at all; a vague prompt or missing retrieval gets
 named as such instead of buried under nodes.
 
-**2 · It walks the ladder out loud** and names the rung plus the trigger that
-justified it. *"Rung 3, because correctness can't be asserted mechanically"* is a
+**2 · It walks the ladder out loud** and names the level plus the trigger that
+justified it. *"Level 3, because correctness can't be asserted mechanically"* is a
 decision you can argue with. *"It's complex, so a graph"* is not, and it won't say
 that.
 
 **3 · It stops and shows you the design.** An ASCII sketch you can read in the
 terminal, the Mermaid source, a pre-filled [mermaid.live](https://mermaid.live)
 link, the state table with one owner per field, the bounds, and the cost compared
-across adjacent rungs. **Then it ends its turn and waits.** Delete nodes, re-route
+across adjacent levels. **Then it ends its turn and waits.** Delete nodes, re-route
 edges, hand the diagram back — your version becomes the spec.
 
 **4 · It builds on your stack**, not its favourite one. Python, TypeScript, plain
@@ -125,15 +125,15 @@ answers.
 ### A worked run
 
 [**examples/ticket-triage/**](examples/ticket-triage/) has the whole thing on one
-problem: the request, the scope questions, every rung's verdict, the design and
+problem: the request, the scope questions, every level's verdict, the design and
 its cost comparison, the five assertions, and the real output — including the
 moment the reviewer caught a security ticket filed at the wrong priority.
 
 ## The ladder
 
-Phase 1 is the core of the skill. Start at rung 1, stop at the first rung that holds, and climb only when that rung's named trigger is **literally true** — not because the task feels hard.
+Phase 1 is the core of the skill. **The ladder is six levels of orchestration, ordered simplest first — a level describes the shape of the *solution*, not the difficulty of the *task*.** Start at level 1, stop at the first level that holds, and climb only when that level's named trigger is **literally true**.
 
-| Rung | Shape | Climb past it only when |
+| Level | Shape | Climb past it only when |
 |---|---|---|
 | **1 · Plain script** | Deterministic code, no model | Work needs judgement a rule cannot encode |
 | **2 · Loop** | One agent with tools, self-terminating | Correctness cannot be asserted mechanically |
@@ -144,7 +144,7 @@ Phase 1 is the core of the skill. Start at rung 1, stop at the first rung that h
 
 **What does not justify climbing:** task difficulty, step count, "feels complex", "could run in parallel", or wanting the design to look sophisticated. Independence is a *precondition* for fan-out, not a reason — nearly every batch has independent items, and splitting destroys any judgement that needs to see them together.
 
-Two rules hold at every rung:
+Two rules hold at every level:
 
 1. **One writer, always.** Extra nodes contribute judgement, never edits. Parallel writers making conflicting implicit decisions is the failure mode that killed agent-swarm designs industry-wide.
 2. **Structure does not buy intelligence.** It buys context isolation and wall-clock time. At equal budget it does not buy accuracy.
@@ -186,8 +186,8 @@ seeing only the tickets and the assignments and never the writer's reasoning,
 flagged it as cross-account exposure that must be P0. The second pass fixed it.
 
 The walkthrough shows every phase: the scope questions, the ladder with each
-rung's verdict, the design with its state table and bounds, the **cost compared
-across rungs 2/3/5**, and the four Phase 4 assertions.
+level's verdict, the design with its state table and bounds, the **cost compared
+across levels 2/3/5**, and the four Phase 4 assertions.
 
 ```bash
 python examples/ticket-triage/triage.py            # the digest
@@ -239,14 +239,14 @@ anyway, or `--python /other/bin/python` to run under a different interpreter.
 
 **Tested end to end four times.** On four real tasks it behaved correctly, and the ladder discriminated rather than giving the same answer every time:
 
-| Task | Rung | Outcome |
+| Task | Level | Outcome |
 |---|---|---|
 | Validate 77 installed Claude skills | 1 · plain script | Gate refused a graph. Verification then caught two false-positive bugs in the tool it had just written |
 | Generate release notes from git history | 3 · loop + reviewer | Reviewer caught a hallucinated "CI pipeline" claim that no commit supported |
 | Replace six manual test commands | 1 · plain script | Gate refused again. Found 4 of the 6 documented commands were silently unrunnable |
 | Triage support tickets | 3 · loop + reviewer | Reviewer caught a cross-account data leak filed P2 instead of P0 |
 
-Four trials is not a track record. But it was enough to find **four defects in the skill itself** — a reducer footgun in `plain-code.md`, a rung-5 trigger whose "or" swallowed the rule, cost presented as a bare number, and a missing count assertion. All four came from *using* it. None would have surfaced from re-reading it.
+Four trials is not a track record. But it was enough to find **four defects in the skill itself** — a reducer footgun in `plain-code.md`, a level-5 trigger whose "or" swallowed the rule, cost presented as a bare number, and a missing count assertion. All four came from *using* it. None would have surfaced from re-reading it.
 
 ## Sources
 
