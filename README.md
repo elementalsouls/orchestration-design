@@ -86,6 +86,26 @@ an architecture review, or a design you already half-built.
 
 ### What happens next
 
+Six phases. The one to know about is **2.5 — it stops and waits for you.**
+
+```mermaid
+flowchart TD
+    U(["you describe your problem"]) --> P0["<b>Phase 0</b> · scope<br/>what breaks if this goes wrong?"]
+    P0 -->|"the real problem is lower down"| FIX["fix the prompt, the retrieval,<br/>or the missing tool — <i>and stop</i>"]
+    P0 --> P1{"<b>Phase 1</b> · the ladder<br/>how much structure?"}
+    P1 -->|"levels 1–2 · most common"| SHORT["<b>Phase 2</b> · short design<br/>stages, one diagram, bounds"]
+    P1 -->|"levels 3–6"| FULL["<b>Phase 2</b> · full design<br/>+ state table, cost comparison"]
+    SHORT --> STOP
+    FULL --> STOP["<b>Phase 2.5</b> · your review<br/>◼ HARD STOP — it ends its turn"]
+    STOP -->|"you cut nodes, re-route edges"| P3["<b>Phase 3</b> · build<br/>on your stack, not its favourite"]
+    P3 --> P4["<b>Phase 4</b> · prove it<br/>assertions, not eyeballs"]
+    style STOP fill:#7a2020,stroke:#e08581,color:#fff
+    style FIX fill:#33280f,stroke:#d9ae4e,color:#fff
+    style P1 fill:#123336,stroke:#56c2cb,color:#fff
+```
+
+Two branches worth noticing. **Phase 0 can end the whole thing** — if your real problem is a vague prompt or missing retrieval, it says so instead of burying it under nodes. And **levels 1–2 take a shorter path through Phase 2**, because the most common outcome should not carry the heaviest paperwork.
+
 **1 · It asks about your problem before proposing anything.** Volume, cadence, and
 critically *which failure actually hurts you* — a wrong answer reaching a customer
 is a different design from a crashed nightly batch. It also checks whether your
@@ -146,6 +166,8 @@ Phase 1 is the core of the skill. **The ladder is six levels of orchestration, o
 
 **What does not justify climbing:** task difficulty, step count, "feels complex", "could run in parallel", or wanting the design to look sophisticated. Independence is a *precondition* for fan-out, not a reason — nearly every batch has independent items, and splitting destroys any judgement that needs to see them together.
 
+**Levels are picked per stage, not per system.** Most real designs are mixed — a deterministic fetch, a level-3 judgement — and the headline level is simply the highest any stage needs. Each stage also gets a **kind**: `fixed` (no model), `model` (one call), or `agent` (loops with tools until it decides it's done). That last one matters, because **an agent node is not bounded by the loop around it** — it declares its own caps or it runs away inside a design that looks bounded.
+
 Two rules hold at every level:
 
 1. **One writer, always.** Extra nodes contribute judgement, never edits. Parallel writers making conflicting implicit decisions is the failure mode that killed agent-swarm designs industry-wide.
@@ -155,7 +177,7 @@ Two rules hold at every level:
 
 | File | What it gives you |
 |---|---|
-| `SKILL.md` | The six phases: scope → ladder → paper design → **visual review** → build → verify |
+| `SKILL.md` | The six phases: scope → ladder → paper design → **visual review** → build → verify. Includes the **level 1–2 exit ramp**, so simple answers stay cheap to document |
 | `references/evidence.md` | Every claim sourced, with honest strength ratings per source |
 | `references/graph-design.md` | Nodes, edges, state ownership, bounds, cost — framework-free |
 | `references/anti-patterns.md` | Starts from the symptom you'd notice, gives mechanism and fix |
@@ -180,7 +202,9 @@ one finds duplicates."*
 The ladder collapsed all three into **one writer plus one reviewer**, and the
 reviewer earned its place immediately:
 
-![demo run](docs/img/demo-run.svg)
+![Terminal output of the ticket triage example. Twelve tickets are triaged into P0 through P3. The header line reads: attempts 2, verdict PASS, no under-prioritised critical tickets. Under P0 sits T-1044, an API leaking other customers' data, alongside a total login outage.](docs/img/demo-run.svg)
+
+<sub>**What to look at:** the `attempts : 2` on line three, and `T-1044` sitting under **P0**.</sub>
 
 `attempts: 2` is the story. On the first pass the writer filed *"API returns
 other customers' data"* as **P2** — plausible, quiet, and wrong. The reviewer,
@@ -189,7 +213,13 @@ flagged it as cross-account exposure that must be P0. The second pass fixed it.
 
 The walkthrough shows every phase: the scope questions, the ladder with each
 level's verdict, the design with its state table and bounds, the **cost compared
-across levels 2/3/5**, and the four Phase 4 assertions.
+across levels 2/3/5**, and the five Phase 4 assertions.
+
+Phase 4 is where the claims get checked. Nothing here is asserted by eye:
+
+![Terminal output of the verification run. The example self-test reports the leak was raised to P0, the reviewer is read-only, the bound is live, exhaustion is marked, and a malformed ticket was isolated. Below it, run_checks.py reports nine checks passing.](docs/img/demo-verify.svg)
+
+<sub>**What to look at:** the top block is the example proving its own behaviour — reviewer read-only, bound live, failure isolated. The bottom block is every runnable in the repo checked in one command.</sub>
 
 ```bash
 python examples/ticket-triage/triage.py            # the digest
@@ -239,7 +269,9 @@ anyway, or `--python /other/bin/python` to run under a different interpreter.
 
 **The research will age.** Core papers are 2025–2026. If models get dramatically better at coordinating, the loop-first default weakens. `evidence.md` is dated so you can see the shelf life, and it separates strong evidence (controlled experiments) from weaker (single-company production reports).
 
-**Tested end to end four times.** On four real tasks it behaved correctly, and the ladder discriminated rather than giving the same answer every time:
+**Tested end to end six times — twice by agents that had never seen it.** Four runs by the author, then two *cold-context* runs: a fresh agent given only the user's request and the installed skill file, with no knowledge of the project. Those two are the useful evidence, because the author cannot evaluate a document he wrote from memory.
+
+The four authored runs, where the ladder discriminated rather than giving one answer every time:
 
 | Task | Level | Outcome |
 |---|---|---|
@@ -248,7 +280,9 @@ anyway, or `--python /other/bin/python` to run under a different interpreter.
 | Replace six manual test commands | 1 · plain script | Gate refused again. Found 4 of the 6 documented commands were silently unrunnable |
 | Triage support tickets | 3 · loop + reviewer | Reviewer caught a cross-account data leak filed P2 instead of P0 |
 
-Four trials is not a track record. But it was enough to find **four defects in the skill itself** — a reducer footgun in `plain-code.md`, a level-5 trigger whose "or" swallowed the rule, cost presented as a bare number, and a missing count assertion. All four came from *using* it. None would have surfaced from re-reading it.
+Six trials is not a track record. But it was enough to find **thirteen defects in the skill itself**, every one from *using* it rather than reading it. The cold runs alone caught six: file references to things the bundle doesn't ship, a design smell that fired on correct designs, a verification phase that assumed a reviewer which levels 1–2 don't have, a spend budget that assumed tokens where nothing costs tokens, an ambiguity about whether Phase 0 asks or assumes, and no prompt anywhere about legal or ethical bounds for a tool that touches third-party data.
+
+None of those would have surfaced from re-reading the file. That is the method worth stealing more than anything else here: **have something with no memory of writing it try to follow it.**
 
 ## Sources
 
