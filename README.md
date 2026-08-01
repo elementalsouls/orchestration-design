@@ -1,26 +1,51 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/banner-dark.svg">
+  <img alt="orchestration-design — decide how much orchestration your work actually needs, usually less than you think. Left: the five-box agent diagram everyone draws, greyed out and struck through. Right: the two-node design the work actually needed." src="docs/img/banner-light.svg">
+</picture>
+
 # orchestration-design
 
-A Claude Code skill that decides **how much orchestration your work actually needs** — and usually concludes it's less than you think.
+> A Claude Code skill that decides **how much orchestration your work actually needs** — and usually concludes it's less than you think. 12 markdown files. No dependencies, no engine, nothing to run.
 
-Eleven markdown files. No dependencies, no engine, nothing to run.
+Built by **[Sachin Sharma](https://www.linkedin.com/in/sachinsharma8080/)** — Bug Hunting & GenAI Security Research.
 
 ---
 
-## The problem
+## Does any of this sound familiar?
 
-You want to build something with AI agents. Every framework's docs and most tutorials show you the same picture: five boxes with arrows between them. Planner → Researcher → Writer → Reviewer → Formatter. It looks like engineering.
+| What you'd say out loud | What's actually wrong |
+|---|---|
+| *"My pipeline is a mess and I'm scared to touch it."* | Node count. Past ~7 nodes most designs contain steps masquerading as nodes. |
+| *"One bad item kills the whole batch."* | An exception escaping a branch instead of being caught inside it. |
+| *"It re-runs everything from scratch after one failure."* | No checkpointer. A persistence problem wearing an orchestration costume. |
+| *"It loops forever."* / *"Costs exploded overnight."* | A missing attempt cap, step limit, or spend field a router actually reads. |
+| *"Outputs change between identical runs."* | Two nodes writing one state field. The highest-yield bug in this whole class. |
+| *"The reviewer approves everything."* | Same model, same context, grading its own homework. |
+| *"Everyone's using multi-agent — should we?"* | Probably not. Keep reading. |
 
-So you build it. Then it costs ~15× what you expected, runs slower than one agent would have, and when it's wrong you can't tell which box did it. And you can't say whether it beats a single agent, because you never compared them at the same cost.
+You don't need the vocabulary to use this. Describe the symptom in plain English and the skill loads itself.
 
-Here's the part that stings. From the 2026 literature:
+---
 
-- Anthropic's widely-quoted result — multi-agent beating single-agent by **90.2%** — came with a footnote almost nobody repeats: it used **~15× the tokens**, and **token spend alone explained 80% of the performance variance**.
-- Two follow-up papers held compute constant. Most of the advantage disappeared. Under matched thinking-token budgets a single agent was **best or statistically indistinguishable from best at every budget except the lowest**.
-- Across seven multi-agent frameworks, measured correctness was poor — ChatDev at **33.3%** on ProgramDev, AppWorld at **86.7% failure** on cross-app tests.
+## The 60-second check — no install required
 
-Most people building agent systems right now are paying multi-agent prices for single-agent quality.
+Before anything else, run the single highest-yield check by hand. **List every field in your shared state. For each one, count the nodes that write it.**
 
-## What this does
+```
+state field        written by                     verdict
+─────────────────────────────────────────────────────────────────────
+results            worker, summarizer             ← TWO WRITERS. This is your bug.
+attempts           writer                         ok
+errors             every node (append reducer)    ok — declared append
+```
+
+Any field with more than one writer and no declared reducer is **state drift**: your run is non-deterministic and nobody knows which node won. Fix that one thing and a surprising number of "flaky agent" problems evaporate.
+
+If that found something, the rest of this is worth your time.
+
+---
+
+## What it actually does
 
 It's an opinionated advisor that interrupts you *before* you write the wrong thing.
 
@@ -36,6 +61,142 @@ You ship in an afternoon instead of a week, and you can debug it with a print st
 
 When the work **genuinely** needs structure, the same ladder says so — and names the specific trigger (*"the work exceeds one context window"*, not *"this feels complicated"*). Then it designs on paper first, shows you the diagram so you can delete what you don't want, builds on whatever stack you actually use, and **asserts** that the code matches the diagram you approved.
 
+---
+
+## Why "usually less than you think" is a claim, not an opinion
+
+Every framework's docs show the same picture: five boxes with arrows. It looks like engineering. So you build it, it costs ~15× what you expected, runs slower than one agent would have, and when it's wrong you can't tell which box did it.
+
+From the 2026 literature:
+
+- Anthropic's widely-quoted result — multi-agent beating single-agent by **90.2%** — came with a footnote almost nobody repeats: it used **~15× the tokens**, and **token spend alone explained 80% of the performance variance**.
+- Two follow-up papers held compute constant. Most of the advantage disappeared. Under matched thinking-token budgets a single agent was **best or statistically indistinguishable from best at every budget except the lowest**.
+- Across seven multi-agent frameworks, measured correctness was poor — ChatDev at **33.3%** on ProgramDev, AppWorld at **86.7% failure** on cross-app tests.
+
+**Most people building agent systems right now are paying multi-agent prices for single-agent quality.** Full citations in [Sources](#sources); the reasoning is in `references/evidence.md`, which separates controlled experiments from single-company production reports.
+
+---
+
+## Two ways in
+
+### A. You already built it, and it's bad → **start here**
+
+This is the common case and the honest front door. The skill reconstructs the design your code *actually* implements — nodes, edges, state ownership, bounds — then diffs it against what a good design would be.
+
+> "This has grown too complex." · "It works but I'm scared of it." · "I inherited this."
+
+It does **not** open with a rewrite proposal. It makes the existing design visible first, because half the findings become obvious the moment someone sees it written down. Then it ranks fixes by what they cost *you* — correctness first, runaway risk second, structure third — and proposes the smallest sequence of changes that each ship independently.
+
+→ `references/auditing-an-existing-graph.md`
+
+### B. You're about to build something new
+
+Phases 0 → 4: scope the work, pick the level, design on paper, **show a human and stop**, implement on your runtime, verify by assertion.
+
+The hard stop at Phase 2.5 is the part that earns its keep. You get an ASCII sketch, a Mermaid block, a pre-filled [mermaid.live](https://mermaid.live) edit link, and one **specific** question — *"which node would you delete?"* — because open approval questions get "looks fine" and specific ones get real answers. People cut more than they add once they can see the shape.
+
+---
+
+## The ladder
+
+Six levels, simplest first. Start at 1. **Stop at the first level that holds.** Climb only when that level's named trigger is *literally true*.
+
+| Level | Shape | Climb past it only when |
+|---|---|---|
+| **1 · Plain script** | Deterministic code, no model | The work needs judgement a rule cannot encode |
+| **2 · Loop** | One agent with tools, self-terminating | Correctness can't be asserted mechanically |
+| **3 · Loop + reviewer** ← default | One writer, one read-only checker, clean context | — |
+| **4 · Reviewer panel** | Several lenses, one synthesis | One reviewer provably misses a whole defect class |
+| **5 · Fan-out** | One branch per item, isolated failures | **The work exceeds one context window** |
+| **6 · Durable workflow** | Persistent, resumable, scheduled | The run outlives a process, or needs replay |
+
+**Levels are picked per stage, not per system.** Most real designs are mixed.
+
+**What does *not* justify climbing:** task difficulty, step count, "feels complex", "could run in parallel", or wanting the design to look sophisticated. Independence is a *precondition* for fan-out, not a trigger — nearly every batch has independent items, so treating that as sufficient sends everything to level 5.
+
+**Landing on level 1 or 2 is a successful use of this skill**, and the most common correct outcome.
+
+---
+
+## System or process? Both are orchestration
+
+Most orchestration writing assumes your output is software. A great deal of multi-step work with a model isn't.
+
+|  | **System** | **Process** |
+|---|---|---|
+| Output | code that runs without you | work that runs *with* you |
+| Examples | pipeline, batch job, service | research project, audit, migration, manuscript, hiring round |
+| Nodes are | functions, model calls, agents | prompts, subagents, **human decisions** |
+| State is | a dataclass, a checkpointer | a **ledger file** |
+| Bounds are | attempt counters, token budgets | rounds, budget, wall clock |
+
+The method is identical; only the substrate changes. → `references/targets/procedural.md`
+
+That file carries the pattern that generalises furthest: **generate the "not covered" section from your ledger rather than from memory — every time, including when it's empty.** A deliverable that lists what was found and stays silent on what was never examined implies coverage it didn't achieve. That's the default failure of every report, review and summary written from recall.
+
+---
+
+## See it run
+
+A support-ticket triage built with the skill — level 3, one writer, one independent reviewer, bounded.
+
+![Terminal output of the ticket triage example. Twelve tickets are triaged into P0 through P3. The header line reads: attempts 2, verdict PASS, no under-prioritised critical tickets. Under P0 sits T-1044, an API leaking other customers' data, alongside a total login outage.](docs/img/demo-run.svg)
+
+The reviewer caught a cross-account data leak filed as P2 and raised it to P0. That's the whole argument for level 3 in one line.
+
+Then the verification phase proves the design holds — the reviewer never edits, the bound is live, exhaustion is marked, a malformed item is isolated:
+
+![Terminal output of the verification run. The example self-test reports the leak was raised to P0, the reviewer is read-only, the bound is live, exhaustion is marked, and a malformed ticket was isolated. Below it, run_checks.py reports nine checks passing.](docs/img/demo-verify.svg)
+
+---
+
+## What it catches, with numbers
+
+Findings from real runs. The ones worth publishing are the ones where the skill said **no**.
+
+**A loop-back edge that could never do anything.** A design added a cycle so findings could feed new work back into the pipeline. Sound premise — except no node *inside* the cycle wrote the state the re-entry point read. One grep proved it:
+
+```
+who writes `surface` inside the loop?   grep -n 'add_surface' engine/*.py
+  -> only recon(), which is OUTSIDE the loop   ==> DECORATIVE
+```
+
+Rounds 2 and 3 did no work and the run declared victory. **~120 lines of loop, bounds and dryness machinery deleted**; the implementation went from ~230 lines to ~110 and did strictly more.
+
+**A bound that was decorative.** A spend budget incremented at the live API call — so in the project's own mock mode it never incremented, the cap never fired, and the bound was **untested in every test that existed**. Caught by Phase 4's *"force the condition each bound guards."* Moving the counter to the dispatch point made it real.
+
+**A reviewer that wasn't independent.** Producer and reviewer sharing a model and a context. Same fix everywhere: separate step, clean context, verdict only, never edits the artifact.
+
+The pattern across all three: **none would have surfaced from re-reading the design.** They surfaced from assertions and one grep.
+
+---
+
+## What's in the skill
+
+```
+SKILL.md                          the method — phases 0 through 4
+references/
+  evidence.md                     the research behind the two rules, dated
+  graph-design.md                 the runtime-free design method (Phase 2)
+  design-checklist.md             annotated 8-point review checklist
+  anti-patterns.md                symptom -> diagnosis -> fix
+  auditing-an-existing-graph.md   Track B — for what already exists
+  targets/
+    procedural.md                 output is a process, not software
+    plain-code.md                 try this first, for systems
+    langgraph-python.md
+    langgraph-js.md
+    claude-code-subagents.md
+    durable-workflow.md
+```
+
+Two rules hold at every level, and both come from the evidence:
+
+1. **One writer. Always.** Extra nodes contribute judgement, never edits.
+2. **Structure does not buy intelligence.** At matched token budgets a single agent matches or beats multi-agent designs. Climbing costs money and reliability.
+
+---
+
 ## Install
 
 ```bash
@@ -44,214 +205,11 @@ cd orchestration-design
 ./build.sh
 ```
 
-That packages the skill and copies it to `~/.claude/skills/orchestration-design/`. Re-run after any edit under `skill/`.
+Packages the skill and copies it to `~/.claude/skills/orchestration-design/`. Re-run after any edit under `skill/`. To uninstall: `rm -rf ~/.claude/skills/orchestration-design`.
 
-To uninstall: `rm -rf ~/.claude/skills/orchestration-design`.
+It fires on its own from topic — you don't invoke it by name. Say *"my pipeline is a mess"* or *"should this be multi-agent?"* and it loads.
 
-## How to use it
-
-### It fires on its own
-
-Claude Code keeps every installed skill's `description` in context and matches it
-against what you type. You don't invoke anything — you just describe your problem
-and the skill loads itself.
-
-**You don't need the vocabulary.** These all trigger it:
-
-```
-"my pipeline is a mess"
-"one bad step kills the whole run"
-"it re-runs everything from scratch when it fails"
-"these steps should run in parallel"
-"this agent has grown too complex"
-"it keeps looping forever"
-"our costs exploded last month"
-"should I split this script into separate services?"
-```
-
-So do the obvious ones — *build a multi-agent system*, *agent workflow*, *ETL*,
-*batch job*, *LangGraph*, *fan-out*, *supervisor/worker*, *RAG ingestion*,
-*CI/CD flow*.
-
-### Calling it deliberately
-
-```
-/orchestration-design
-/orchestration-design triage 500 PDF contracts and extract renewal dates
-```
-
-Or just name it in a sentence: *"use orchestration-design for this."* Worth doing
-when you want the full process on something it might not have flagged on its own —
-an architecture review, or a design you already half-built.
-
-### What happens next
-
-Six phases. The one to know about is **2.5 — it stops and waits for you.**
-
-```mermaid
-flowchart TD
-    U(["you describe your problem"]) --> P0["<b>Phase 0</b> · scope<br/>what breaks if this goes wrong?"]
-    P0 -->|"the real problem is lower down"| FIX["fix the prompt, the retrieval,<br/>or the missing tool — <i>and stop</i>"]
-    P0 --> P1{"<b>Phase 1</b> · the ladder<br/>how much structure?"}
-    P1 -->|"levels 1–2 · most common"| SHORT["<b>Phase 2</b> · short design<br/>stages, one diagram, bounds"]
-    P1 -->|"levels 3–6"| FULL["<b>Phase 2</b> · full design<br/>+ state table, cost comparison"]
-    SHORT --> STOP
-    FULL --> STOP["<b>Phase 2.5</b> · your review<br/>◼ HARD STOP — it ends its turn"]
-    STOP -->|"you cut nodes, re-route edges"| P3["<b>Phase 3</b> · build<br/>on your stack, not its favourite"]
-    P3 --> P4["<b>Phase 4</b> · prove it<br/>assertions, not eyeballs"]
-    style STOP fill:#7a2020,stroke:#e08581,color:#fff
-    style FIX fill:#33280f,stroke:#d9ae4e,color:#fff
-    style P1 fill:#123336,stroke:#56c2cb,color:#fff
-```
-
-Two branches worth noticing. **Phase 0 can end the whole thing** — if your real problem is a vague prompt or missing retrieval, it says so instead of burying it under nodes. And **levels 1–2 take a shorter path through Phase 2**, because the most common outcome should not carry the heaviest paperwork.
-
-**1 · It asks about your problem before proposing anything.** Volume, cadence, and
-critically *which failure actually hurts you* — a wrong answer reaching a customer
-is a different design from a crashed nightly batch. It also checks whether your
-real problem is orchestration at all; a vague prompt or missing retrieval gets
-named as such instead of buried under nodes.
-
-**2 · It walks the ladder out loud** and names the level plus the trigger that
-justified it. *"Level 3, because correctness can't be asserted mechanically"* is a
-decision you can argue with. *"It's complex, so a graph"* is not, and it won't say
-that.
-
-**3 · It stops and shows you the design.** An ASCII sketch you can read in the
-terminal, the Mermaid source, a pre-filled [mermaid.live](https://mermaid.live)
-link, the state table with one owner per field, the bounds, and the cost compared
-across adjacent levels. **Then it ends its turn and waits.** Delete nodes, re-route
-edges, hand the diagram back — your version becomes the spec.
-
-**4 · It builds on your stack**, not its favourite one. Python, TypeScript, plain
-code with no framework, Claude Code subagents, or a durable workflow engine.
-
-**5 · It proves the build matches the design** with assertions, not by eye — the
-reviewer really is read-only, the bound really fires, the counts really add up.
-
-### Three things that might surprise you
-
-**It often tells you not to build it.** Refusing is the most common correct
-outcome, not a failure. If your five-box diagram collapses to one loop and a
-reviewer, that's the skill working.
-
-**It stops mid-task and waits.** Phase 2.5 is a hard stop by design. Say *"just
-build it"* in your request if you want it to skip the gate.
-
-**It asks one pointed question, not "look good?"** Usually *"which node would you
-delete?"* — because open approval questions get "fine" and specific ones get real
-answers.
-
-### A worked run
-
-[**examples/ticket-triage/**](examples/ticket-triage/) has the whole thing on one
-problem: the request, the scope questions, every level's verdict, the design and
-its cost comparison, the five assertions, and the real output — including the
-moment the reviewer caught a security ticket filed at the wrong priority.
-
-## The ladder
-
-Phase 1 opens with a question the ladder depends on: **can you enumerate the valid paths?** If the route depends on what the work turns up as it goes — open-ended research is the classic case — structure is the wrong tool, and you want an agent with good tools rather than a graph. The ladder assumes a knowable route.
-
-Phase 1 is the core of the skill. **The ladder is six levels of orchestration, ordered simplest first — a level describes the shape of the *solution*, not the difficulty of the *task*.** Start at level 1, stop at the first level that holds, and climb only when that level's named trigger is **literally true**.
-
-| Level | Shape | Climb past it only when |
-|---|---|---|
-| **1 · Plain script** | Deterministic code, no model | Work needs judgement a rule cannot encode |
-| **2 · Loop** | One agent with tools, self-terminating | Correctness cannot be asserted mechanically |
-| **3 · Loop + reviewer** ← **default** | One writer, one read-only checker with clean context | — |
-| **4 · Reviewer panel** | Several reviewers, different lenses, one synthesis | One reviewer provably misses a defect class *and* stakes justify the spend |
-| **5 · Fan-out** | One branch per item, own context, isolated failures | **Work exceeds one context window** — independence alone is not enough |
-| **6 · Durable workflow** | Persistent, resumable, scheduled | Run outlives a process, or needs replay or a human pause |
-
-**What does not justify climbing:** task difficulty, step count, "feels complex", "could run in parallel", or wanting the design to look sophisticated. Independence is a *precondition* for fan-out, not a reason — nearly every batch has independent items, and splitting destroys any judgement that needs to see them together.
-
-**Levels are picked per stage, not per system.** Most real designs are mixed — a deterministic fetch, a level-3 judgement — and the headline level is simply the highest any stage needs. Each stage also gets a **kind**: `fixed` (no model), `model` (one call), or `agent` (loops with tools until it decides it's done). That last one matters, because **an agent node is not bounded by the loop around it** — it declares its own caps or it runs away inside a design that looks bounded.
-
-Two rules hold at every level:
-
-1. **One writer, always.** Extra nodes contribute judgement, never edits. Parallel writers making conflicting implicit decisions is the failure mode that killed agent-swarm designs industry-wide.
-2. **Structure does not buy intelligence.** It buys context isolation and wall-clock time. At equal budget it does not buy accuracy.
-
-## What's in the skill
-
-| File | What it gives you |
-|---|---|
-| `SKILL.md` | The six phases: scope → ladder → paper design → **visual review** → build → verify. Includes the **level 1–2 exit ramp**, so simple answers stay cheap to document |
-| `references/evidence.md` | Every claim sourced, with honest strength ratings per source |
-| `references/graph-design.md` | Nodes, edges, state ownership, bounds, cost — framework-free |
-| `references/anti-patterns.md` | Starts from the symptom you'd notice, gives mechanism and fix |
-| `references/auditing-an-existing-graph.md` | For when something already exists and has rotted |
-| `references/design-checklist.md` | The 8-point review checklist with reasoning |
-| `references/targets/*.md` | Five runtimes: LangGraph Python, LangGraph.js, plain code, Claude Code subagents, durable engines |
-
-### The visual review gate
-
-Phase 2.5 exists so a human can see the architecture **before** any code is written, and it is a **hard stop** — the skill ends its turn on the design rather than presenting a diagram and building anyway.
-
-You get three things: an **ASCII sketch** you can read in the terminal with nothing installed, the **Mermaid source**, and a **pre-filled [mermaid.live](https://mermaid.live) link** that opens the diagram already loaded — no copy-paste. Drag nodes around, delete what you don't want, hand it back. Your edited diagram becomes the spec. (`tools/mermaid_link.py` generates the link; the ASCII is a preview only and is never asserted against.)
-
-Designs stay **text, never images** — text is the only form you can edit *and* Phase 4 can assert against. The moment a design becomes a PNG, verification breaks and the diagram starts drifting from the code.
-
-## Worked example — see it run
-
-[**examples/ticket-triage/**](examples/ticket-triage/) is a full walkthrough on a
-real-shaped problem: *"I want three agents — one labels tickets, one prioritises,
-one finds duplicates."*
-
-The ladder collapsed all three into **one writer plus one reviewer**, and the
-reviewer earned its place immediately:
-
-![Terminal output of the ticket triage example. Twelve tickets are triaged into P0 through P3. The header line reads: attempts 2, verdict PASS, no under-prioritised critical tickets. Under P0 sits T-1044, an API leaking other customers' data, alongside a total login outage.](docs/img/demo-run.svg)
-
-<sub>**What to look at:** the `attempts : 2` on line three, and `T-1044` sitting under **P0**.</sub>
-
-`attempts: 2` is the story. On the first pass the writer filed *"API returns
-other customers' data"* as **P2** — plausible, quiet, and wrong. The reviewer,
-seeing only the tickets and the assignments and never the writer's reasoning,
-flagged it as cross-account exposure that must be P0. The second pass fixed it.
-
-The walkthrough shows every phase: the scope questions, the ladder with each
-level's verdict, the design with its state table and bounds, the **cost compared
-across levels 2/3/5**, and the five Phase 4 assertions.
-
-Phase 4 is where the claims get checked. Nothing here is asserted by eye:
-
-![Terminal output of the verification run. The example self-test reports the leak was raised to P0, the reviewer is read-only, the bound is live, exhaustion is marked, and a malformed ticket was isolated. Below it, run_checks.py reports nine checks passing.](docs/img/demo-verify.svg)
-
-<sub>**What to look at:** the top block is the example proving its own behaviour — reviewer read-only, bound live, failure isolated. The bottom block is every runnable in the repo checked in one command.</sub>
-
-```bash
-python examples/ticket-triage/triage.py            # the digest
-python examples/ticket-triage/triage.py --selftest # the assertions
-```
-
-## Reference implementations
-
-Five runnable examples. All run offline with deterministic stub models — **no API key** — and every one asserts its own behaviour, so they cannot silently rot.
-
-```bash
-python run_checks.py --setup   # once: creates ./.venv and installs langgraph
-python run_checks.py           # all six checks, one exit code
-```
-
-`run_checks.py` uses the repo's own `.venv` when it exists, so the bare command
-is green with no flags. `.venv` is gitignored, so a fresh clone runs `--setup`
-first.
-
-A missing dependency is a **failure**, not a skip — in CI a silently-skipped
-check is how green builds start lying. Pass `--allow-skip` to tolerate it
-anyway, or `--python /other/bin/python` to run under a different interpreter.
-
-| Example | Pattern | What it demonstrates |
-|---|---|---|
-| `01-loop-not-graph` | *(no graph)* | The gate **refusing**. Stdlib only, no framework. The most common correct outcome. |
-| `02-sequential` | A | The smallest thing that's still legitimately a graph — heterogeneous models per step |
-| `03-reviewer-loop` | B | Bounded reject loop, plus a `flag_for_human` terminal that a second scenario actually reaches |
-| `04-fanout-fanin` | C | `Send` fan-out where one branch deliberately fails and the other five still finish |
-| `05-judge-panel` | D | Parallel reviewers, majority synthesis, bounded gate — every conditional edge exercised |
-
-`verify_topology.py` parses the hand-drawn diagram and the compiled one out of each README, reduces both to edge sets, and asserts they're equal. Comparing two nine-edge diagrams by eye is exactly the check a tired developer skips.
+---
 
 ## Why this might help you
 
@@ -259,7 +217,9 @@ anyway, or `--python /other/bin/python` to run under a different interpreter.
 
 **Your design outlives your framework.** Nodes, state ownership and bounds are identical whether you use LangGraph, TypeScript, or eighty lines of `asyncio`. The runtime is picked **last**, and `plain-code.md` is the honest answer more often than framework marketing suggests.
 
-**It gives junior developers an argument.** When a lead says "let's make it multi-agent," you can now point at controlled experiments and say: *let's match the token budget first, then compare.*
+**It gives junior developers an argument.** When a lead says "let's make it multi-agent," you can point at controlled experiments and say: *let's match the token budget first, then compare.*
+
+---
 
 ## Honest limits
 
@@ -267,7 +227,9 @@ anyway, or `--python /other/bin/python` to run under a different interpreter.
 
 **It will argue with you.** If you want a graph and the work doesn't justify one, it says so. That's the design, and some people will find it annoying.
 
-**The research will age.** Core papers are 2025–2026. If models get dramatically better at coordinating, the loop-first default weakens. `evidence.md` is dated so you can see the shelf life, and it separates strong evidence (controlled experiments) from weaker (single-company production reports).
+**It does not prevent every wrong call.** In one run it produced a decorative loop, then over-corrected into a straight line for work that genuinely iterated. Evidence caught both; the ladder caught neither. What the skill reliably gives you is the *method and vocabulary to catch it* — a premise check, an assertion, a grep — which is worth more than a promise it can't keep.
+
+**The research will age.** Core papers are 2025–2026. If models get dramatically better at coordinating, the loop-first default weakens. `evidence.md` is dated so you can see the shelf life.
 
 **Tested end to end six times — twice by agents that had never seen it.** Four runs by the author, then two *cold-context* runs: a fresh agent given only the user's request and the installed skill file, with no knowledge of the project. Those two are the useful evidence, because the author cannot evaluate a document he wrote from memory.
 
@@ -284,6 +246,8 @@ Six trials is not a track record. But it was enough to find **thirteen defects i
 
 None of those would have surfaced from re-reading the file. That is the method worth stealing more than anything else here: **have something with no memory of writing it try to follow it.**
 
+---
+
 ## Sources
 
 - [Anthropic — How we built our multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system) — the 90.2% claim, 15× token cost, 80%-of-variance finding
@@ -294,15 +258,18 @@ None of those would have surfaced from re-reading the file. That is the method w
 - [Cognition — Multi-Agents: What's Actually Working](https://cognition.com/blog/multi-agents-working) (2026) — the single-writer rule
 - Original checklist: [aibuilderclub — Graph Engineering Guide 2026](https://www.aibuilderclub.com/blog/graph-engineering-guide-2026)
 
+---
+
 ## Repo layout
 
 ```
 skill/orchestration-design/    skill source — edit here, then ./build.sh
 reference-implementation/      five runnable examples + verify_topology.py
 examples/ticket-triage/        full worked walkthrough, start to finish
+tools/gen_banner.py            README banner (regenerate, never hand-edit)
 tools/mermaid_link.py          diagram -> pre-filled mermaid.live edit URL
 tools/term_svg.py              captured terminal output -> SVG for this README
-docs/img/                      generated screenshots (regenerate, never hand-edit)
+docs/img/                      generated images (regenerate, never hand-edit)
 run_checks.py                  run every check; one command, one exit code
 orchestration-design.skill     packaged bundle (zip)
 build.sh                       package + install to ~/.claude/skills/

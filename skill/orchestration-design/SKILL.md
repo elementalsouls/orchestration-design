@@ -65,6 +65,24 @@ Read `references/graph-design.md`. Produce exactly five parts:
 4. **Bounds** — an attempt counter on every loop-back, a global step limit, and a spend budget a router reads. **Where nothing costs tokens, bound what does cost**: HTTP requests, pages fetched, wall clock. A level-1 design is still capable of running away.
 5. **Cost, compared** — the level you chose **and the levels either side**. A single number informs nothing; the delta does. If the level below is nearly as cheap you climbed too far; if the level above buys nothing, say so out loud.
 
+### Before you draw a loop-back, check its premise
+
+**Name the state the re-entry point reads, then name the node inside the loop that writes it.** If no node in the cycle writes that field, the loop is decorative: it will run, consume its bounds, and terminate having changed nothing. Grep for the writer before you draw the edge — it costs one command and it is the cheapest design error to catch.
+
+```
+loop-back edge:   verify ──► map
+map reads:        surface
+who writes surface inside the loop?   grep -n 'add_surface' engine/*.py
+  -> only recon(), which is OUTSIDE the loop   ==> DECORATIVE. Delete the edge.
+```
+
+This fails in both directions and both are common:
+
+- **A cycle whose re-entry has no writer.** The design looks iterative and runs as a straight line with extra rounds. Symptom: round 2 onward does no work, every run reaches the dry condition immediately.
+- **A straight line whose work is actually iterative.** Discovery feeds discovery — a finding reveals new inputs, a source reveals new sources — and a single pass silently stops at the first layer. Symptom: the output is complete-looking and shallow, and a human doing the same task by hand keeps going.
+
+The test is the same for both: *does any node in the loop write the state the loop re-reads?* Answer it from the code or the process, not from intuition. Intuition gets this wrong in both directions.
+
 **Landed on level 1 or 2? Take the exit ramp.** This is the most common outcome and it gets the **lightest** paperwork, not the heaviest. Produce the stages with their kinds (a list, not a table), one diagram, the bounds from part 4, one line of cost — *"zero model calls, zero tokens"* plus a sentence on what climbing would buy, no table — and the runtime recommendation. Nothing else.
 
 **Skip the state table unless a field has more than one writer.** Its whole job is catching concurrent writes; if every field has one owner, write *"single writer throughout"* and move on. Where things do run concurrently — parallel fetches, gathered results — table **those fields only**, because that is exactly where results vanish silently.
@@ -91,17 +109,20 @@ Whatever they hand back is the source of truth — update the tables to match th
 
 ## Phase 3 — Choose a target, then implement
 
-**3a. Choose the runtime.** Ask what they actually use; do not default to a framework.
+**3a. Choose the substrate.** First ask what the output actually *is*, because it decides everything below.
+
+**Is the output a system, or a process?** A system is code that will run without you — a pipeline, a job, a service. A process is work that runs *with* you — a research project, an audit, a migration, a manuscript, a hiring round — where the nodes are prompts, subagents and human decisions, and there is no runtime to compile. Both are orchestration and the method is identical; only the substrate differs.
 
 | Situation | Target file in `references/targets/` |
 |---|---|
-| Few nodes, no LLM, or a team that won't adopt a dependency | **`plain-code.md`** ← try first |
+| **The output is a process, not a system** — no runtime to deploy | **`procedural.md`** |
+| Few nodes, no LLM, or a team that won't adopt a dependency | **`plain-code.md`** ← try first, for systems |
 | Python, LLM orchestration, wants a framework | `langgraph-python.md` |
 | TypeScript / Node | `langgraph-js.md` |
 | Orchestrating Claude Code subagents | `claude-code-subagents.md` |
 | Long-running, needs durability/retries/schedules | `durable-workflow.md` |
 
-Adopting a framework for a three-node pipeline is the same error as climbing a level you didn't need. `plain-code.md` is listed first because it is the honest answer more often than people expect.
+Adopting a framework for a three-node pipeline is the same error as climbing a level you didn't need. `plain-code.md` is listed first among the runtimes because it is the honest answer more often than people expect — and `procedural.md` is listed above it because a great deal of multi-step work with a model is never going to be code at all.
 
 **3b. Implement.** Read the chosen target file. Four rules hold on every runtime:
 
@@ -148,4 +169,4 @@ A mismatch means the implementation drifted from what the human approved. Fix it
 - `references/design-checklist.md` — the 8-point checklist with reasoning, for design reviews.
 - `references/anti-patterns.md` — symptom → diagnosis → fix.
 - `references/auditing-an-existing-graph.md` — Track B workflow.
-- `references/targets/*.md` — one file per runtime. Read only the one chosen in Phase 3a.
+- `references/targets/*.md` — one file per substrate. Read only the one chosen in Phase 3a. `procedural.md` covers the case where the output is a process rather than software — no runtime, ledger as state.
