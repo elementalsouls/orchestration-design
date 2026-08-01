@@ -66,6 +66,14 @@ Use when something is already built and behaving badly. Each entry starts from w
 **Diagnosis:** an exception propagating out of a branch instead of being caught inside it.
 **Fix:** risky nodes catch their own exceptions into an `errors` field and return normally. Downstream routes around them, and the report names what failed. Assert on the counts so isolation stays proven.
 
+### "The loop runs, but round 2 onward does nothing"
+**Diagnosis:** a decorative cycle. The loop-back re-enters a node that reads state no node *inside* the loop writes, so every round after the first re-reads unchanged input, does no work, and the run terminates on its dryness condition having iterated for nothing.
+**Fix:** name the field the re-entry point reads, then grep for its writers. If every writer sits outside the cycle, delete the edge — the design was a straight line, and the loop was spending bounds and wall clock for no output. If the work genuinely is iterative, the bug is the reverse: some node *should* write that field and doesn't, so wire it. Check the premise before drawing any loop-back; it is one command, and it is the cheapest design error to catch.
+
+### "The single pass looks complete, and is shallow"
+**Diagnosis:** the inverse of the above — a straight line where the work is genuinely iterative. Discovery feeds discovery (a finding reveals new inputs, a source reveals new sources), and one pass stops at the first layer without saying so.
+**Fix:** the tell is that a human doing the same task by hand keeps going after your design has declared itself finished. Add the loop-back, then bound it — `max_rounds` plus "K consecutive rounds with nothing new" — so it terminates on exhaustion rather than on attention. Intuition gets this wrong in both directions, which is why the premise check is a grep and not a judgement call.
+
 ### "It's a mess and I can't debug it"
 **Diagnosis:** usually node count. Past roughly seven nodes, most designs contain steps masquerading as nodes.
 **Fix:** run the merge test on every adjacent pair, and the determinism test on every node — anything not calling a model is a plain function. Designs commonly halve.
