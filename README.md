@@ -141,6 +141,8 @@ Most orchestration writing assumes your output is software. A great deal of mult
 
 The method is identical; only the substrate changes. → `references/targets/procedural.md`
 
+**And when the substrate *is* a framework, LangGraph is a first-class target, not an afterthought.** Loop-first is a claim about *defaults*, not a rejection: four of the five reference implementations are built on LangGraph v1.0 (`StateGraph`, `START`/`END`, `Send`, `Command`), and `verify_topology.py` asserts LangGraph's own `draw_mermaid()` output against the diagram a human approved — the deepest integration in the repo. Where fan-out with managed concurrency, durable state or complex routing genuinely earns a framework, Phase 3a routes you straight to it with working examples. What the skill refuses is adopting one for three sequential steps.
+
 That file carries the pattern that generalises furthest: **generate the "not covered" section from your ledger rather than from memory — every time, including when it's empty.** A deliverable that lists what was found and stays silent on what was never examined implies coverage it didn't achieve. That's the default failure of every report, review and summary written from recall.
 
 ---
@@ -187,16 +189,16 @@ SKILL.md                          the method — phases 0 through 4
 references/
   evidence.md                     the research behind the two rules, dated
   graph-design.md                 the runtime-free design method (Phase 2)
-  design-checklist.md             annotated 8-point review checklist
+  design-checklist.md             annotated design-review checklist
   anti-patterns.md                symptom -> diagnosis -> fix
   auditing-an-existing-graph.md   Track B — for what already exists
   targets/
     procedural.md                 output is a process, not software
     plain-code.md                 try this first, for systems
-    langgraph-python.md
-    langgraph-js.md
-    claude-code-subagents.md
-    durable-workflow.md
+    langgraph-python.md           LangGraph v1.0 — 4 of 5 reference impls
+    langgraph-js.md               LangGraph, TypeScript
+    claude-code-subagents.md      orchestrating Claude Code subagents
+    durable-workflow.md           needs replay, schedules, human pauses
 ```
 
 ---
