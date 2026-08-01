@@ -1,106 +1,111 @@
 # Corpus audit — 76 installed skills
 
-**Run:** 2026-08-02 · `python tools/skill_lint.py --corpus ~/.claude/skills`
+**First run:** 2026-08-01 · **Re-run after remediation:** 2026-08-02
+**Command:** `python tools/skill_lint.py --corpus ~/.claude/skills`
 **Standard:** `docs/skill-design-standard.md`
 
-Read-only. Nothing in `~/.claude/skills` was edited. This is a diagnostic, and the
-annotations below say where the linter is right, where it is merely technically right, and
-where a human should overrule it.
+Read-only with respect to the skills themselves — the linter reports, it does not edit. The
+remediation between the two runs was done by hand, and this document keeps both states so the
+rules can be judged by what changed rather than by what they claim.
 
-## Headline
+## Before and after
 
-| | Count |
-|---|---|
-| Skills scanned | 76 |
-| At least one FAIL | **7** |
-| Completely clean — no FAIL, no WARN | **13** |
-
-| Rule | FAIL | WARN |
+| | 2026-08-01 | 2026-08-02 |
 |---|---|---|
-| `load-budget` | 6 | 48 |
-| `description-cap` | 3 | 10 |
-| `description-routing` | — | 12 |
-| `reference-integrity` | 0 | — |
-| `bundle-hygiene` | 0 | — |
-| `name-matches-dir` | 0 | — |
+| Skills scanned | 76 | 76 |
+| At least one FAIL | 7 | **6** |
+| Completely clean — no FAIL, no WARN | 13 | **20** |
+| Descriptions over the 1024 cap | 3 | **0** |
+| Byte-identical description pairs | 1 | **0** |
+| Always-resident listing | ~11,381 est. tokens | **~9,259 est. tokens** |
 
-Three rules found nothing at all. That is a real result, not a gap: these skills ship clean
-bundles, name themselves consistently, and do not reference files they fail to include.
+| Rule | FAIL then | FAIL now | WARN then | WARN now |
+|---|---|---|---|---|
+| `load-budget` | 6 | 6 | 48 | 48 |
+| `description-cap` | 3 | **0** | 10 | **1** |
+| `description-routing` | — | — | 12 | 12 |
+| `reference-integrity` | 0 | 0 | — | — |
+| `bundle-hygiene` | 0 | 0 | — | — |
+| `name-matches-dir` | 0 | 0 | — | — |
 
-## The seven failures
+## What was fixed
 
-| Skill | FAIL | Detail |
+**The three over-cap descriptions.** `bug-bounty` 1405 → 658, `bb-local-toolkit` 1405 → 493,
+`osint-methodology` 1290 → 562. Everything past 1024 characters was being discarded without a
+warning, and in descriptions that long the discarded tail is where the specific symptom
+triggers live. Nineteen descriptions were trimmed in total, recovering roughly 1,860 est.
+tokens per session; the remaining ten near-cap WARNs came down with them.
+
+**A duplicate that was a routing coin-flip.** `bug-bounty` and `bb-local-toolkit` were 96% the
+same file — 1603 vs 1557 lines, 63 lines of difference — with **byte-identical descriptions**.
+Two skills with the same description are dispatched by chance. `bb-local-toolkit` is now
+disabled via `skillOverrides`; `bug-bounty` survives because it is the copy that routes onward
+to `bb-methodology` and `hunt-dispatch` rather than dead-ending.
+
+**One unrelated skill disabled.** `meme-coin-audit` — zero uses across 82 startups.
+
+Disabled skills still sit on disk, so the linter still scans and reports them. It reads
+settings for nothing; **`skillOverrides` is invisible to it.** That is a real limitation of the
+tool, not of the data — read the `bb-local-toolkit` row below as historical.
+
+## What remains: six FAILs, all load-budget
+
+| Skill | Body lines | Reference files |
 |---|---|---|
-| `bug-bounty` | 2 | description **1405** chars; body **1600** lines, no references |
-| `bb-local-toolkit` | 2 | description **1405** chars; body **1554** lines, no references |
-| `osint-methodology` | 1 (+1 WARN) | description **1290** chars; body **1641** lines with 1 reference file |
-| `graphify` | 1 | body **1063** lines, no references |
-| `security-arsenal` | 1 | body **908** lines, no references |
-| `web2-recon` | 1 | body **694** lines, no references |
-| `web3-audit` | 1 | body **602** lines, no references |
+| `bug-bounty` | 1600 | 0 |
+| `bb-local-toolkit` *(disabled)* | 1554 | 0 |
+| `graphify` | 1063 | 0 |
+| `security-arsenal` | 908 | 0 |
+| `web2-recon` | 694 | 0 |
+| `web3-audit` | 602 | 0 |
 
-### The description failures are the urgent ones
+All of it loads whenever the skill fires, including for a narrow question that needs one
+section. Splitting these into `references/` is the largest remaining context win and the one
+piece of the first audit's fix list that has not been done — trimming descriptions was the
+cheap half.
 
-`bug-bounty`, `bb-local-toolkit` and `osint-methodology` exceed the Codex 1024-character cap
-by 266 to 381 characters. Everything past 1024 is **discarded without a warning**. Whatever
-triggers live in that tail — and in descriptions this long, the tail is usually the specific
-symptom phrasings — do not exist as far as routing is concerned.
+`osint-methodology` dropped off this list by trimming alone, but at 1641 body lines with a
+single reference file it still carries a WARN. The pattern is understood there; the split just
+was not finished.
 
-This is invisible from the author's side. The skill behaves normally in Claude Code, so
-there is no symptom to notice.
+## The 48 load-budget WARNs — still where the linter is too blunt
 
-Two more sit close enough to be one edit away: `hunt-ato` at **1020** and `hunt-llm-ai` at
-**1014**, both within ten characters.
+Unchanged from the first run, and the annotation still holds. Forty-eight skills exceed 250
+body lines with no references, most of them the `hunt-*` family at roughly 250–400 lines each,
+one per vulnerability class.
 
-*(An earlier hand count of this same data said five skills were over the cap. Three are.
-`hunt-ato` and `hunt-llm-ai` are under it. The linter corrected the author — which is the
-argument for building the checker before writing the prose about it.)*
-
-### The body failures cost context on every unrelated trigger
-
-Four skills carry 600 to 1641 lines with no `references/` split. All of it loads whenever the
-skill fires, including when it fires for a narrow question that needs one section.
-
-`osint-methodology` is the sharpest case: it *has* a reference file, so the pattern is
-understood — it just kept 1641 lines in the body anyway.
-
-## The 48 load-budget WARNs — where the linter is too blunt
-
-Forty-eight skills exceed 250 body lines with no references. Most are the `hunt-*` family at
-roughly 250–400 lines each, one per vulnerability class.
-
-**The linter is technically right and practically wrong about these.** A `hunt-nosqli` skill
-is a single coherent procedure that a user wants in full when it fires; splitting it into
-`references/` buys nothing because there is no branch where you would want only part of it.
-The threshold exists for skills where the body is a *table of contents* over material most
-triggers never touch — which is what the 600+ line failures are.
-
-Treat 250 as the line where you should *ask* whether the body is one procedure or several,
-not the line where you must split.
-
-The `hunt-*` family scores well on everything else: clean bundles, consistent names, no
-broken references, and thirteen of them are completely clean.
+**The linter is technically right and practically wrong about these.** A `hunt-nosqli` skill is
+one coherent procedure a user wants in full when it fires; splitting it buys nothing, because
+there is no branch where you would want only part of it. The threshold is for bodies that are a
+*table of contents* over material most triggers never touch — which is what the 600+ line FAILs
+are. Treat 250 as the line where you *ask*, not the line where you must split.
 
 ## The 12 routing WARNs
 
-Twelve descriptions state what the skill *is* without stating when to fire it. This is the
-cheapest fix in the audit — one clause — and it is the one that most directly changes whether
-the skill loads at all.
+Twelve descriptions still state what the skill *is* without stating when to fire it. Unchanged,
+and still the cheapest fix in the audit: one clause each, and it is the change that most
+directly decides whether the skill loads at all.
 
-The failure mode is not theoretical: this repo's own skill was invisible to an entire class
-of request until its description named a second vocabulary.
+## The one remaining description WARN
 
-## What this audit cannot tell you
+`orchestration-design` at 985 characters, and it stays there. The description deliberately
+carries both a software and a process vocabulary, because a cold run proved that dropping the
+second produced **zero** invocations for process-shaped requests. Per Pillar 1, when the cap
+warning and the vocabulary rule conflict, vocabulary wins.
 
-Whether any of these skills are any *good*. Every rule here is about being loadable,
-routable and honest about what ships. `hunt-nosqli` could be 400 lines of excellent
-methodology or 400 lines of nonsense and this document would score it identically.
+## Still true, and still the headline
 
-## If you fix three things
+The active listing is ~9,259 est. tokens against a budget of roughly 2,000 — about 1% of the
+context window. Past that, entries get truncated and routing degrades. Description trimming
+took ~2,100 tokens out of it and cannot take much more without eating trigger keywords.
 
-1. Trim the three over-cap descriptions to 1024. Nothing else in this audit is silently losing behaviour right now.
-2. Split the four 600+ line bodies. Biggest context saving per hour spent.
-3. Add a "use when" clause to the twelve descriptions missing one.
+The structural fix is that most `hunt-*` skills are dispatched **by** `hunt-dispatch` on a
+fingerprint match rather than routed by topic, so their descriptions pay rent in the
+always-resident listing for a decision they never participate in. That is a redesign of how the
+suite loads, not a cleanup, and it is out of scope here.
 
-Everything else can wait, and the 48 body WARNs should be judged case by case rather than
-cleared.
+## What this audit still cannot tell you
+
+Whether any of these skills are any *good*. Every rule is about being loadable, routable and
+honest about what ships. `hunt-nosqli` could be 400 lines of excellent methodology or 400 lines
+of nonsense and this document would score it identically.
