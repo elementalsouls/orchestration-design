@@ -50,7 +50,7 @@ def render():
       f'orchestration your work actually needs, and usually concludes it is less than you think. '
       f'The evidence: a widely quoted 90.2 percent multi-agent win used 15 times the tokens, and '
       f'token spend alone explained 80 percent of the performance variance. Six levels, twelve '
-      f'markdown files, zero dependencies, seven cited sources, MIT licence.">')
+      f'markdown files, zero dependencies, eight cited sources, MIT licence.">')
 
     # ---------- canvas ----------
     a('<defs>'
@@ -141,7 +141,7 @@ def render():
     # ---------- stats + install ----------
     a(f'<line x1="60" y1="516" x2="{W-60}" y2="516" stroke="{RULE}"/>')
     stats = (("6", "LEVELS"), ("12", "FILES"), ("0", "DEPENDENCIES"),
-             ("7", "CITED SOURCES"), ("13", "DEFECTS SELF-FOUND"))
+             ("8", "CITED SOURCES"), ("13", "DEFECTS SELF-FOUND"))
     for i, (n, lab) in enumerate(stats):
         x = 60 + i * 138
         a(f'<text x="{x}" y="552" font-family="{MONO}" font-size="27" font-weight="700" '
