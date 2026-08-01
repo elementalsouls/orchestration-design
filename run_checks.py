@@ -66,7 +66,7 @@ def discover() -> list[dict]:
     checks.append({"name": "ticket-triage",
                    "path": ROOT / "examples" / "ticket-triage" / "triage.py",
                    "needs": None, "args": ["--selftest"]})
-    for tool in ("mermaid_link", "term_svg"):
+    for tool in ("mermaid_link", "term_svg", "skill_lint"):
         checks.append({"name": f"tools/{tool}", "path": ROOT / "tools" / f"{tool}.py",
                        "needs": None, "args": ["--selftest"]})
     return checks

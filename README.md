@@ -2,7 +2,7 @@
 
 # orchestration-design
 
-> A Claude Code skill that decides **how much orchestration your work actually needs** — and usually concludes it's less than you think. The skill is 12 markdown files with no runtime and no dependencies. The repo around it is five runnable implementations and a nine-check suite that proves them.
+> A Claude Code skill that decides **how much orchestration your work actually needs** — and usually concludes it's less than you think. The skill is 12 markdown files with no runtime and no dependencies. The repo around it is five runnable implementations and a ten-check suite that proves them.
 
 Built by **[Sachin Sharma](https://www.linkedin.com/in/sachinsharma8080/)** — Bug Hunting & GenAI Security Research.
 
@@ -160,7 +160,7 @@ The reviewer caught a cross-account data leak filed as P2 and raised it to P0. T
 
 Then the verification phase proves the design holds — the reviewer never edits, the bound is live, exhaustion is marked, a malformed item is isolated:
 
-![Terminal output of the verification run. The example self-test reports the leak was raised to P0, the reviewer is read-only, the bound is live, exhaustion is marked, and a malformed ticket was isolated. Below it, run_checks.py reports nine checks passing.](docs/img/demo-verify.svg)
+![Terminal output of the verification run. The example self-test reports the leak was raised to P0, the reviewer is read-only, the bound is live, exhaustion is marked, and a malformed ticket was isolated. Below it, run_checks.py reports ten checks passing.](docs/img/demo-verify.svg)
 
 ---
 
@@ -242,7 +242,7 @@ It fires on its own from topic — you don't invoke it by name. Say *"my pipelin
 **To run the repo itself** — the five reference implementations and the checks that prove them:
 
 ```bash
-python3 run_checks.py            # all nine checks, one exit code
+python3 run_checks.py            # all ten checks, one exit code
 python3 run_checks.py --setup    # create .venv and install langgraph first
 ```
 
@@ -283,6 +283,9 @@ examples/ticket-triage/        full worked walkthrough, start to finish
 tools/gen_banner.py            README banner (regenerate, never hand-edit)
 tools/mermaid_link.py          diagram -> pre-filled mermaid.live edit URL
 tools/term_svg.py              captured terminal output -> SVG for this README
+tools/skill_lint.py            conformance checker for ANY skill dir; --corpus mode
+docs/skill-design-standard.md  what a skill must be, derived from 719 installed ones
+docs/corpus-audit-2026-08.md   that standard run across 76 skills, read-only
 docs/img/                      generated images (regenerate, never hand-edit)
 run_checks.py                  run every check; one command, one exit code
 orchestration-design.skill     packaged bundle (zip)
@@ -290,6 +293,19 @@ build.sh                       package + install to ~/.claude/skills/
 CLAUDE.md                      conventions for working on this repo
 LICENSE                        MIT
 ```
+
+### The standard is usable on its own
+
+`tools/skill_lint.py` doesn't know about this repo. Point it at any skill directory:
+
+```bash
+python3 tools/skill_lint.py ~/.claude/skills/<name>
+python3 tools/skill_lint.py --corpus ~/.claude/skills
+```
+
+It checks the things an author cannot see from inside their own file: a `description:` past the **1024-character cap Codex truncates silently**, a body large enough to cost context on every unrelated trigger, a referenced path that isn't in the shipped bundle, litter in the zip. Across 76 installed skills it found **3** over the cap and **6** bodies between 600 and 1641 lines with no `references/` split — and only **2.5% of 719 skills** use progressive disclosure at all.
+
+Two of the seven rules can't be automated and the standard says so: evidence discipline, and a cold run by an agent with no memory of writing the thing.
 
 ---
 
@@ -299,7 +315,7 @@ LICENSE                        MIT
 
 Also welcome: a run that found a defect the way the cold runs did, a target file for a runtime that isn't covered, or a source that moves one of the claims in `evidence.md`.
 
-Before opening a PR, run `python3 run_checks.py` — nine checks, one exit code — and read `CLAUDE.md`, which carries the conventions this repo holds itself to (including the 160-line budget on `SKILL.md`, which is measured, not aspirational).
+Before opening a PR, run `python3 run_checks.py` — ten checks, one exit code — and read `CLAUDE.md`, which carries the conventions this repo holds itself to (including the 160-line budget on `SKILL.md`, which is measured, not aspirational).
 
 ---
 

@@ -47,14 +47,26 @@ The runtime-independent rules are the four at the end of this list; those apply 
 ## Working on the skill itself
 Edit files under `skill/orchestration-design/`, then run `./build.sh` — it repackages the zip and reinstalls to `~/.claude/skills/orchestration-design/`. Keep SKILL.md at or below ~160 lines; put depth in `references/`. Target files are loaded only when Phase 3a selects them, so depth there is cheap.
 
-**The skill ships as markdown only — no Python, no engine.** Triggering is entirely the `description:` frontmatter field. Nothing parses code or builds a graph object; the `.py` files in `reference-implementation/` are examples for humans and are deliberately *not* in the bundle. Designs are Mermaid **text**, never images — text is the only form a human can edit and Phase 4 can assert against.
+**The skill ships as markdown only — no Python, no engine.** Triggering is entirely the `description:` frontmatter field. Nothing parses code or builds a graph object. The `.py` files are deliberately *not* in the bundle — they are the reference implementations plus the harness that checks them, and they run here rather than being installed. Designs are Mermaid **text**, never images — text is the only form a human can edit and Phase 4 can assert against.
+
+## The skill-design standard
+`docs/skill-design-standard.md` is what this repo holds *itself* to, derived 2026-08-02 from the 719 skills installed on this machine. `tools/skill_lint.py` enforces the machine-checkable half and runs as one of the ten checks. Before changing `SKILL.md` frontmatter or adding a reference file:
+
+```bash
+python tools/skill_lint.py skill/orchestration-design    # exit 1 on any FAIL
+```
+
+The rules that bite most often: `description:` is capped at **1024 characters** because Codex truncates past it *silently*; `SKILL.md` stays at or below ~160 lines with depth in `references/`; every intra-skill path a file names must actually ship. `docs/corpus-audit-2026-08.md` is that linter run across all 76 installed skills — read-only, and a worked example of what the rules catch.
+
+Two pillars are **not** machine-checkable and must not be faked: *evidence discipline* (sources fetched, dated, strength-separated) and *cold-run acceptance* (an agent with no memory of writing it follows it — one run per vocabulary the description claims).
 
 ## Testing
 ```bash
 python run_checks.py --setup               # once per clone: ./.venv + langgraph
-python run_checks.py                       # all nine checks, one exit code
+python run_checks.py                       # all ten checks, one exit code
 python run_checks.py --selftest            # the runner's own assertions
 python tools/mermaid_link.py --selftest    # URL payload round-trips
+python tools/skill_lint.py --selftest      # the lint rules prove themselves
 ```
 All must exit 0 offline with stub models. `run_checks.py` prefers the repo's
 `.venv` (gitignored, langgraph 1.2.10), falling back to the current interpreter.

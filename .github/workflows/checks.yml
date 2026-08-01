@@ -1,0 +1,29 @@
+name: checks
+
+# The repo claims ten green checks on its front page. This is what makes that
+# claim true on a machine that is not the author's.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  run-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Create .venv and install langgraph
+        run: python run_checks.py --setup
+
+      - name: Run every check
+        run: python run_checks.py
+
+      - name: Lint the skill against its own standard
+        run: python tools/skill_lint.py skill/orchestration-design
