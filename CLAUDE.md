@@ -14,28 +14,26 @@ A toolkit that helps builders decide how much orchestration a piece of work need
 ## Layout
 - `orchestration-design.skill` — packaged Claude skill (zip). Source of truth is `skill/`.
 - `skill/orchestration-design/` — skill source:
-  - `SKILL.md` — Track A (phases 0, 1, 2, 2.5, 3, 4) and Track B (audit). Keep under ~150 lines.
+  - `SKILL.md` — Track A (phases 0, 1, 2, 2.5, 3, 4) and Track B (audit). **Currently 160 lines; keep it there or below.** It loads on every trigger while `references/` load on demand, so the rule is *method here, depth there* — a worked example belongs in `references/`, the rule it demonstrates belongs here.
   - Phase 1 opens with a **pre-ladder question — can you enumerate the valid paths?** If not, structure is the wrong tool; use an agent harness and let the path emerge. The ladder assumes a knowable route.
   - Phase 1 is then a **six-level ladder** (plain script → loop → loop+reviewer → panel → fan-out → durable). Default is level 3. Climb only when a level's named trigger is literally true. **Levels are picked per stage, not per system** — the headline level is the highest any stage needs.
   - Phase 2.5 is a **visual review gate and a hard stop**: hand over an ASCII sketch, the Mermaid block, a pre-filled mermaid.live link (`tools/mermaid_link.py`), and the tables; ask one specific question ("which node would you delete?"); then **end the turn**. The ASCII is a preview and is never asserted against. No implementation in the same turn. If running autonomously, label the result DESIGN NOT REVIEWED rather than treating absence as approval.
   - Phase 4 is **level-aware**. Levels 4–6 assert the edge sets match (`verify_topology.py`). Levels 1–3 emit no diagram, so they assert behaviour instead: reviewer is read-only, the bound is live, the exhaustion terminal is reachable and marked, failure is isolated.
-  - `references/evidence.md` — the research behind the two rules and the ladder
-  - `references/graph-design.md` — the runtime-free design method (Phase 2 core)
-  - `references/design-checklist.md` — annotated 8-point design checklist
+  - `references/evidence.md` — the research behind the two rules, dated, with controlled experiments separated from production reports
+  - `references/graph-design.md` — the runtime-free design method (Phase 2 core), incl. the loop-back premise check
+  - `references/design-checklist.md` — annotated design checklist, for reviews
   - `references/anti-patterns.md` — symptom → diagnosis → fix
   - `references/auditing-an-existing-graph.md` — Track B workflow
-  - `references/targets/` — one file per runtime: `langgraph-python.md`, `langgraph-js.md`, `plain-code.md`, `claude-code-subagents.md`, `durable-workflow.md`
-- `reference-implementation/` — runnable examples, one per pattern:
-  - `01-loop-not-graph/loop.py` — the gate REFUSING a graph; stdlib only, no LangGraph
-  - `02-sequential/` — Pattern A, heterogeneous models per step
-  - `03-reviewer-loop/` — Pattern B, bounded reject loop + `flag_for_human` terminal
-  - `04-fanout-fanin/` — Pattern C, Send fan-out with per-branch failure isolation
-  - `05-judge-panel/` — Pattern D, multi-reviewer panel + bounded plan-review loop
-  - `verify_topology.py` — asserts each README's design diagram matches its compiled one
-- `run_checks.py` — runs every check above; one command, one exit code. Missing deps FAIL by default.
-- `tools/mermaid_link.py` — turns a Mermaid diagram into a pre-filled mermaid.live edit URL (Phase 2.5)
+  - `references/targets/` — one file per substrate: `procedural.md` (output is a process, not software), `plain-code.md`, `langgraph-python.md`, `langgraph-js.md`, `claude-code-subagents.md`, `durable-workflow.md`
+- `reference-implementation/` — one runnable example per pattern, `01-loop-not-graph` through `05-judge-panel`, plus `verify_topology.py`.
+- `tools/` — `gen_banner.py` (README banner), `mermaid_link.py` (diagram → pre-filled edit URL), `term_svg.py` (terminal capture → SVG). All generated images regenerate; never hand-edit `docs/img/`.
 
-## Conventions (apply to ALL graph code in this repo)
+## Conventions
+
+**Scope note.** The rules below govern the **LangGraph example code** in
+`reference-implementation/`. They are not the skill's position — the skill is runtime-last,
+and `plain-code.md` and `procedural.md` are more often the right answer than any framework.
+The runtime-independent rules are the four at the end of this list; those apply everywhere.
 - LangGraph v1.0 API only: StateGraph, START/END, Send, Command, add_conditional_edges, `add_node(..., destinations=(...))`. Never set_entry_point/set_finish_point/ToolExecutor.
 - Multi-node fan-out branches use `Command(update=..., goto=[Send(...)])` with `destinations=` declared — a plain edge after a `Send` target loses the per-item payload and silently gives every branch the global state.
 - Every state field documents its owner node and reducer; fan-in fields use operator.add or add_messages. An append-reduced field cannot be cleared by returning `[]` — round-tag on write, filter on read.
@@ -47,14 +45,14 @@ A toolkit that helps builders decide how much orchestration a piece of work need
 - After changing any graph: run it, then run `verify_topology.py` and confirm `graph.get_graph().draw_mermaid()` still matches the documented design.
 
 ## Working on the skill itself
-Edit files under `skill/orchestration-design/`, then run `./build.sh` — it repackages the zip and reinstalls to `~/.claude/skills/orchestration-design/`. Keep SKILL.md under ~150 lines; put depth in `references/`. Target files are loaded only when Phase 3a selects them, so depth there is cheap.
+Edit files under `skill/orchestration-design/`, then run `./build.sh` — it repackages the zip and reinstalls to `~/.claude/skills/orchestration-design/`. Keep SKILL.md at or below ~160 lines; put depth in `references/`. Target files are loaded only when Phase 3a selects them, so depth there is cheap.
 
 **The skill ships as markdown only — no Python, no engine.** Triggering is entirely the `description:` frontmatter field. Nothing parses code or builds a graph object; the `.py` files in `reference-implementation/` are examples for humans and are deliberately *not* in the bundle. Designs are Mermaid **text**, never images — text is the only form a human can edit and Phase 4 can assert against.
 
 ## Testing
 ```bash
 python run_checks.py --setup               # once per clone: ./.venv + langgraph
-python run_checks.py                       # all six checks, one exit code
+python run_checks.py                       # all nine checks, one exit code
 python run_checks.py --selftest            # the runner's own assertions
 python tools/mermaid_link.py --selftest    # URL payload round-trips
 ```

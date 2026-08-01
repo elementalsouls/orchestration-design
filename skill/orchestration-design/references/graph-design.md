@@ -92,6 +92,33 @@ Rules:
 - **Terminal choice matters.** When bounds are exhausted, decide deliberately: ship best-effort with a caveat, or route to a human/park node. Shipping unreviewed work is sometimes correct and sometimes a data-integrity bug. Choose on purpose.
 - **If it does not fit on a napkin, simplify** — that is a real stopping rule, not a figure of speech.
 
+### Check the premise of every loop-back before you draw it
+
+Name the state the re-entry point reads, then name the node **inside** the cycle that writes
+it. If no writer sits inside, the loop is decorative — it runs, consumes its bounds, and
+terminates having changed nothing.
+
+```
+loop-back edge:   verify ──► map
+map reads:        surface
+who writes surface inside the loop?   grep -n 'add_surface' engine/*.py
+  -> only recon(), which is OUTSIDE the loop   ==> DECORATIVE. Delete the edge.
+```
+
+It fails in both directions, and the two look nothing alike from outside:
+
+- **A cycle whose re-entry has no writer.** Looks iterative, runs as a straight line with
+  extra rounds. Symptom: round 2 onward does no work, and every run hits the dry condition
+  immediately.
+- **A straight line whose work is genuinely iterative.** Discovery feeds discovery — a
+  finding reveals new inputs, a source reveals new sources — and one pass stops at the first
+  layer. Symptom: the output looks complete and is shallow, and a human doing the same task
+  by hand keeps going after your design has declared itself finished.
+
+The test is the same for both: *does any node in the loop write the state the loop re-reads?*
+Answer it from the code or the process. Intuition gets this wrong in both directions, which
+is why this is a grep and not a judgement call.
+
 ## 3. State
 
 The shared object that travels along the edges. This is where graphs rot.
