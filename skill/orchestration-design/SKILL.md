@@ -81,7 +81,7 @@ Do not go straight from design to code. Hand over, in one message:
 
 1. an **ASCII sketch** of the flow — **keep every line under 76 columns** so it survives an 80-column terminal unwrapped; a wrapped diagram is worse than none. Skip it above ~8 nodes, where ASCII stops helping.
 2. the **Mermaid block** — the source of truth, and the only thing Phase 4 asserts against. **Break labels with `<br/>`, never `\n`** — `\n` is version-dependent and commonly renders literally, which hands the human a broken diagram at the exact moment they are asked to read one.
-3. a **mermaid.live link** if you can build one (state is zlib+base64url in the `#pako:` fragment), else tell them to paste the block into <https://mermaid.live>. Either way **say the diagram travels in the URL fragment, which browsers never send to a server** — for a proprietary architecture that reassurance is the difference between them opening it and not.
+3. the **offer** of a mermaid.live edit link — not the link itself. The block above is already editable; say you can pre-fill one and mint it only if asked. Unprompted, a long opaque `#pako:` URL to a third party reads as exfiltration — to the human, and to any security tooling watching. When asked, **say the diagram rides in the URL fragment, which browsers never send to a server**. Never emit one in an autonomous run.
 4. the **stages/nodes**, **bounds**, and **cost** — at levels 1–2 in the exit-ramp form above, at levels 3+ the full node, state and cost tables
 5. the **level chosen and its trigger**
 

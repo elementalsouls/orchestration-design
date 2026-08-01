@@ -103,7 +103,7 @@ It does **not** open with a rewrite proposal. It makes the existing design visib
 
 Phases 0 → 4: scope the work, pick the level, design on paper, **show a human and stop**, implement on your runtime, verify by assertion.
 
-The hard stop at Phase 2.5 is the part that earns its keep. You get an ASCII sketch, a Mermaid block, a pre-filled [mermaid.live](https://mermaid.live) edit link, and one **specific** question — *"which node would you delete?"* — because open approval questions get "looks fine" and specific ones get real answers. People cut more than they add once they can see the shape.
+The hard stop at Phase 2.5 is the part that earns its keep. You get an ASCII sketch, a Mermaid block, an *offer* of a pre-filled [mermaid.live](https://mermaid.live) edit link — offered rather than pasted, because an unrequested opaque URL to a third-party site is the wrong default for a proprietary architecture — and one **specific** question: *"which node would you delete?"* Open approval questions get "looks fine"; specific ones get real answers. People cut more than they add once they can see the shape.
 
 ---
 
