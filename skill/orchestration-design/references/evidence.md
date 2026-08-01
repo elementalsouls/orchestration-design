@@ -12,8 +12,9 @@ subagents **outperformed single-agent Opus 4 by 90.2%** on their internal resear
 
 The same write-up reports the confound. Multi-agent runs used **~15× the tokens** of chat
 (single agents ~4×), and on BrowseComp **"token usage by itself explains 80% of the
-variance"** in performance, with model choice and tool-call count explaining ~15% more.
-So most of the measured advantage tracks spend, not structure.
+variance"** in performance, with tool-call count and model choice as the other two factors —
+**"three factors explained 95% of the performance variance."** So nearly all of the measured
+advantage tracks spend and configuration, not structure.
 
 Two 2026 papers tested this directly by holding compute constant:
 
@@ -22,12 +23,21 @@ Under Equal Thinking Token Budgets"** (arXiv 2604.02460, Stanford / Contextual A
 Qwen3-30B, DeepSeek-R1-Distill-Llama-70B and Gemini 2.5 on FRAMES and MuSiQue 4-hop,
 against five multi-agent variants (sequential, subtask-parallel, parallel-roles, debate,
 ensemble). With *thinking tokens* matched, the single agent "is the best-performing system
-or statistically indistinguishable from the best for all budgets except the lowest one."
+or statistically indistinguishable from the best for all budgets except the lowest one
+(100 tokens)." That floor matters: the only regime where structure wins on this benchmark
+is one too small to think in.
 At 1000 tokens: 0.418 single vs 0.379 sequential multi-agent. At 5000: 0.427 vs 0.386.
 
-**"The Illusion of Multi-Agent Advantage"** (arXiv 2606.13003) reproduces the pattern on
-GPQA, SWE-bench and BrowseCompPlus: once tokens, inference steps and model capacity are
-matched, most reported multi-agent gains disappear.
+**"The Illusion of Multi-Agent Advantage"** (arXiv 2606.13003, Jwalapuram et al.) attacks
+the same assumption from a different angle. It pits *automatically generated* multi-agent
+architectures against Chain-of-Thought with Self-Consistency and finds they **"consistently
+underperform CoT-SC despite being up to 10x more expensive"**, on traditional reasoning
+datasets and BrowseComp-Plus.
+
+*Read it precisely: the baseline is CoT-SC, not a compute-matched single agent, so this is
+a cost-effectiveness result rather than a second replication of Tran & Kiela. It points the
+same way — structure did not pay for itself — but by a different route. Weigh the two as
+independent lines of evidence, not as one repeated.*
 
 **The theory.** Tran & Kiela ground it in the Data Processing Inequality: a subagent's
 message is a *function of* the context it saw, so it cannot carry more mutual information
@@ -74,10 +84,19 @@ Reported correctness is poor: ChatDev at **33.3%** on ProgramDev, AppWorld at **
 failure** on cross-app tests. Verification-related modes alone: incorrect verification
 **9.1%**, no or incomplete verification **8.2%**, premature termination **6.2%**.
 
-The finding that matters most here: frameworks *with* explicit verifiers showed fewer
-failures but still low overall success. **Adding a reviewer helps and does not rescue a
-bad architecture.** The authors state the failures need structural fixes, not better
-prompting.
+*Sourcing note (verified 2026-08): the abstract confirms 1600+ traces, 7 frameworks,
+kappa = 0.88, and 14 modes in 3 categories. The five percentages above live in the paper's
+tables and figures and could not be re-extracted from the text or HTML render — Figure 2
+carries them as image data. Treat them as reported-from-figures rather than quotable, and
+do not lead an argument with them. The qualitative finding below is directly quotable and
+carries the same weight.*
+
+The finding that matters most here, in the authors' words: targeted interventions
+**"yield a +14% improvement for ChatDev, [but] they do not resolve all failure cases.
+Moreover, the improved performance remains insufficiently low for real-world deployment."**
+
+**Adding a reviewer helps and does not rescue a bad architecture.** The authors state the
+failures need structural fixes, not better prompting.
 
 ## 4. Cognition changed its mind in public, and the corrected rule is narrow
 
