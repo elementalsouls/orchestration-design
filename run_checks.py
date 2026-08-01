@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run every verification check in this repo. One command, one exit code.
 
-Replaces the six manual commands that used to live in HANDOFF_PROMPT.md.
+Replaces the six manual commands a contributor used to have to run by hand.
 
 Designed with the orchestration-design skill:
   Phase 1  level 1 (plain script). The climb trigger — "needs judgement a rule
