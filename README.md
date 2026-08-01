@@ -2,7 +2,7 @@
 
 # orchestration-design
 
-> A Claude Code skill that decides **how much orchestration your work actually needs** — and usually concludes it's less than you think. 12 markdown files. No dependencies, no engine, nothing to run.
+> A Claude Code skill that decides **how much orchestration your work actually needs** — and usually concludes it's less than you think. The skill is 12 markdown files with no runtime and no dependencies. The repo around it is five runnable implementations and a nine-check suite that proves them.
 
 Built by **[Sachin Sharma](https://www.linkedin.com/in/sachinsharma8080/)** — Bug Hunting & GenAI Security Research.
 
@@ -18,7 +18,8 @@ Built by **[Sachin Sharma](https://www.linkedin.com/in/sachinsharma8080/)** — 
 | *"It loops forever."* / *"Costs exploded overnight."* | A missing attempt cap, step limit, or spend field a router actually reads. |
 | *"Outputs change between identical runs."* | Two nodes writing one state field. The highest-yield bug in this whole class. |
 | *"The reviewer approves everything."* | Same model, same context, grading its own homework. |
-| *"Everyone's using multi-agent — should we?"* | Probably not. Keep reading. |
+| *"Everyone's using multi-agent — should we?"* | Usually not — but sometimes yes, and the skill names the trigger either way. |
+| *"We're fanning out over 10,000 items and it's fragile."* | That trigger is real. Level 5 is the right answer; it just needs bounds and one writer. |
 
 You don't need the vocabulary to use this. Describe the symptom in plain English and the skill loads itself.
 
@@ -125,6 +126,8 @@ Six levels, simplest first. Start at 1. **Stop at the first level that holds.** 
 
 **Landing on level 1 or 2 is a successful use of this skill**, and the most common correct outcome.
 
+**Landing on level 5 or 6 is equally successful** — it is just rarer. When the trigger is literally true, the skill does not talk you out of it: it designs the fan-out, puts an append reducer on every field the branches write, asserts `len(results) == len(items) - len(errors)` so silent loss can't hide, and hands you a runnable implementation on your framework. The gate exists to make the climb *earned*, not to cap you at level 3.
+
 ---
 
 ## System or process? Both are orchestration
@@ -182,6 +185,27 @@ The pattern across all three: **none would have surfaced from re-reading the des
 
 ---
 
+## How it was tested — by agents that had never seen it
+
+The author cannot evaluate a document he wrote from memory. So two of the six end-to-end runs were **cold-context**: a fresh agent given only the user's request and the installed skill file, with no knowledge of this project, no access to the repo, and no idea what answer was wanted.
+
+Those two runs are the useful evidence. The other four are the author's, and they matter for a different reason — the ladder *discriminated* rather than giving one answer every time:
+
+| Task | Level | Outcome |
+|---|---|---|
+| Validate 77 installed Claude skills | 1 · plain script | Gate refused a graph. Verification then caught two false-positive bugs in the tool it had just written |
+| Generate release notes from git history | 3 · loop + reviewer | Reviewer caught a hallucinated "CI pipeline" claim that no commit supported |
+| Replace six manual test commands | 1 · plain script | Gate refused again. Found 4 of the 6 documented commands were silently unrunnable |
+| Triage support tickets | 3 · loop + reviewer | Reviewer caught a cross-account data leak filed P2 instead of P0 |
+
+Between them the six runs found **thirteen defects in the skill itself**, every one from *using* it rather than reading it. The cold runs alone caught six: file references to things the bundle doesn't ship, a design smell that fired on correct designs, a verification phase that assumed a reviewer which levels 1–2 don't have, a spend budget that assumed tokens where nothing costs tokens, an ambiguity about whether Phase 0 asks or assumes, and no prompt anywhere about legal or ethical bounds for a tool that touches third-party data.
+
+A later cold run found the worst one. Given a request in *process* vocabulary — a compliance audit, no code — the skill **did not fire at all**: zero invocations, because every trigger in its description was written in software nouns. The fix was to the description, not the method, and the identical request afterwards fired it on the first turn.
+
+None of those would have surfaced from re-reading the file. **That is the method worth stealing more than anything else here: have something with no memory of writing it try to follow it.**
+
+---
+
 ## What's in the skill
 
 ```
@@ -215,6 +239,15 @@ Packages the skill and copies it to `~/.claude/skills/orchestration-design/`. Re
 
 It fires on its own from topic — you don't invoke it by name. Say *"my pipeline is a mess"* or *"should this be multi-agent?"* and it loads.
 
+**To run the repo itself** — the five reference implementations and the checks that prove them:
+
+```bash
+python3 run_checks.py            # all nine checks, one exit code
+python3 run_checks.py --setup    # create .venv and install langgraph first
+```
+
+Four of the five implementations need `langgraph`; `--setup` installs it into a local `.venv`. Without it those checks report `NO-DEP` and fail loudly rather than skipping green — use `--allow-skip` if you want them tolerated. Nothing here is needed to *use* the skill; it's how you check the examples still work after an edit.
+
 ---
 
 ## Why this might help you
@@ -229,28 +262,15 @@ It fires on its own from topic — you don't invoke it by name. Say *"my pipelin
 
 ## Honest limits
 
-**It is a prompt, not a program.** There's no engine. Nothing scans your codebase or generates architecture. Its entire power is that Claude reads good instructions and follows them. The `.py` files here are examples for humans and are deliberately **not** shipped in the skill bundle.
+**The skill is a prompt, not a program.** Nothing scans your codebase or generates architecture. Its entire power is that Claude reads good instructions and follows them — which is why the installed bundle is markdown only, with no runtime and nothing to import. The Python in this repo is deliberately *not* in that bundle, and it is not decoration either: it's the five reference implementations plus the harness that checks them, including `verify_topology.py`, which asserts LangGraph's emitted diagram against the approved one. You run that here; you don't install it.
 
-**It will argue with you.** If you want a graph and the work doesn't justify one, it says so. That's the design, and some people will find it annoying.
+**It will argue with you.** If you want a graph and the work doesn't justify one, it says so, and some people will find that annoying. It argues from a *named trigger*, though — so the argument ends the moment the trigger is true. Bring real fan-out and it stops pushing back and starts designing.
 
 **It does not prevent every wrong call.** In one run it produced a decorative loop, then over-corrected into a straight line for work that genuinely iterated. Evidence caught both; the ladder caught neither. What the skill reliably gives you is the *method and vocabulary to catch it* — a premise check, an assertion, a grep — which is worth more than a promise it can't keep.
 
 **The research will age.** Core papers are 2025–2026. If models get dramatically better at coordinating, the loop-first default weakens. `evidence.md` is dated so you can see the shelf life.
 
-**Tested end to end six times — twice by agents that had never seen it.** Four runs by the author, then two *cold-context* runs: a fresh agent given only the user's request and the installed skill file, with no knowledge of the project. Those two are the useful evidence, because the author cannot evaluate a document he wrote from memory.
-
-The four authored runs, where the ladder discriminated rather than giving one answer every time:
-
-| Task | Level | Outcome |
-|---|---|---|
-| Validate 77 installed Claude skills | 1 · plain script | Gate refused a graph. Verification then caught two false-positive bugs in the tool it had just written |
-| Generate release notes from git history | 3 · loop + reviewer | Reviewer caught a hallucinated "CI pipeline" claim that no commit supported |
-| Replace six manual test commands | 1 · plain script | Gate refused again. Found 4 of the 6 documented commands were silently unrunnable |
-| Triage support tickets | 3 · loop + reviewer | Reviewer caught a cross-account data leak filed P2 instead of P0 |
-
-Six trials is not a track record. But it was enough to find **thirteen defects in the skill itself**, every one from *using* it rather than reading it. The cold runs alone caught six: file references to things the bundle doesn't ship, a design smell that fired on correct designs, a verification phase that assumed a reviewer which levels 1–2 don't have, a spend budget that assumed tokens where nothing costs tokens, an ambiguity about whether Phase 0 asks or assumes, and no prompt anywhere about legal or ethical bounds for a tool that touches third-party data.
-
-None of those would have surfaced from re-reading the file. That is the method worth stealing more than anything else here: **have something with no memory of writing it try to follow it.**
+**Six trials is not a track record.** They found thirteen defects (above), but six runs — four by the author, two cold — is not a study. Treat the ladder as a well-argued default, not a measured one.
 
 ---
 
@@ -268,6 +288,25 @@ run_checks.py                  run every check; one command, one exit code
 orchestration-design.skill     packaged bundle (zip)
 build.sh                       package + install to ~/.claude/skills/
 CLAUDE.md                      conventions for working on this repo
+LICENSE                        MIT
 ```
+
+---
+
+## Contributing
+
+**The most useful thing you can send is a counterexample.** This skill makes a falsifiable claim — that a named trigger, and only a named trigger, justifies each climb. If you have work where the ladder gave the wrong answer, that is worth more than a typo fix. Open an issue with the task, the level it picked, and what actually turned out to be right.
+
+Also welcome: a run that found a defect the way the cold runs did, a target file for a runtime that isn't covered, or a source that moves one of the claims in `evidence.md`.
+
+Before opening a PR, run `python3 run_checks.py` — nine checks, one exit code — and read `CLAUDE.md`, which carries the conventions this repo holds itself to (including the 160-line budget on `SKILL.md`, which is measured, not aspirational).
+
+---
+
+## Licence
+
+[MIT](LICENSE). Use it, fork it, vendor it into your own skill set. Attribution appreciated, not required.
+
+---
 
 > **Why not "graph engineering"?** That was the original name, and it set the wrong expectation — you'd install it looking for a graph builder and get a gatekeeper. "Loop vs. graph" is a false choice anyway: **a loop is a graph with one node and one edge back to itself.** The real questions are how many writers, and who decides the routing. Ask it that way and the answer is usually *one writer, plus a reviewer*.

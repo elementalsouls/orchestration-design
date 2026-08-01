@@ -152,7 +152,7 @@ def render():
     a(f'<rect x="{W-60-430}" y="530" width="430" height="30" rx="5" fill="{CARD}" stroke="{RULE}"/>')
     a(txt(W - 60 - 414, 550, "$", 11.5, TEAL, 700, MONO))
     a(txt(W - 60 - 400, 550, "./build.sh", 11.5, INK, 500, MONO))
-    a(txt(W - 60 - 16, 550, "no engine · nothing to run", 10, FAINT, 400, MONO, anchor="end"))
+    a(txt(W - 60 - 16, 550, "installs in seconds · zero lock-in", 10, FAINT, 400, MONO, anchor="end"))
 
     a("</svg>")
     return "\n".join(o)
