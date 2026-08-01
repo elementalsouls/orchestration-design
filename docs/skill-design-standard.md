@@ -193,6 +193,15 @@ who did not write it. It **cannot** test routing, because you told the agent whe
 Running only the second and calling it a cold run leaves Pillar 1 untested. That is the
 easiest mistake here to make, and this document's own author made it.
 
+**How to read the result — not by eye, and not from the usage counter.** Both obvious
+methods are wrong, and both were tried here:
+
+- **Content is not evidence at levels 1–2.** A skill that fires and correctly concludes "you need no structure" produces an answer indistinguishable from a good engineer's. One routing test here fired, spent twenty-three ladder and phase references in its working context, and surfaced none of them — because the method prescribes the *lightest* output at the exit ramp. Judging by output would have scored that run a failure.
+- **`skillUsage.usageCount` under-counts.** Three confirmed dispatches moved it by one. It debounces, so a counter delta proves firing happened but never how often, and a flat counter does not prove it didn't.
+
+Read it from the **dispatch record** instead — the `Skill` tool-use entries in the session
+transcript. That is the only signal that is neither inferred nor aggregated.
+
 **The bar:** the routing test fires on the first turn for every vocabulary claimed. The
 followability test has no pass mark — it returns a critique, and the standard is that you
 fix what it found and run it again. Zero findings on a first cold run means the test was too
