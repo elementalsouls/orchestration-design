@@ -1,106 +1,168 @@
 #!/usr/bin/env python3
-"""Generate the README banner, light and dark.
+"""Generate the README banner.
 
-The banner is the thesis in one image: the five-box diagram everyone draws,
-next to the two-node design the work actually needed. Nothing else on it.
+Full-bleed dark canvas, so one file works on both GitHub themes.
 
-    python3 tools/gen_banner.py      -> docs/img/banner-{light,dark}.svg
+The banner's job is to carry the evidence, because the evidence is the
+differentiator. Anyone can claim "you don't need multi-agent". This repo can
+put three numbers from controlled experiments on the front page and cite them.
 
-Self-contained SVG: system font stack, no external refs, no <style> media
-queries (GitHub does not reliably honour them inside an <img>). Two files
-plus a <picture> element is the pattern that actually works.
+    python3 tools/gen_banner.py      -> docs/img/banner.svg
+
+Self-contained: system font stack, no external references, no <style> media
+queries (GitHub does not honour them inside an <img>).
 """
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parent.parent / "docs" / "img"
+W, H = 1400, 580
 
-THEMES = {
-    # surface is transparent; every colour must read on white AND on #0d1117
-    "light": dict(ink="#1f2328", muted="#59636e", faint="#8c959f",
-                  stale="#adb5bd", accent="#0969da", rule="#d1d9e0"),
-    "dark":  dict(ink="#e6edf3", muted="#9198a1", faint="#6e7681",
-                  stale="#484f58", accent="#58a6ff", rule="#30363d"),
-}
+BG0, BG1 = "#0b0f1a", "#141b2e"          # canvas gradient
+INK = "#e8edf7"                           # primary text
+DIM = "#8f9bb3"                           # secondary text
+FAINT = "#5a6580"                         # labels, chrome
+RULE = "#232c42"                          # hairlines
+TEAL = "#3ddad0"                          # primary accent — measured, evidence
+AMBER = "#f2b544"                         # secondary — the "no", the struck-through
+CARD = "#151d31"
 
-W, H = 1200, 340
-FONT = ("ui-sans-serif,-apple-system,'Segoe UI',Roboto,"
-        "'Helvetica Neue',Arial,sans-serif")
+FONT = ("ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif")
 MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace"
 
 
-def box(x, y, w, h, stroke, label, t, dashed=False, fill="none", weight=1.5):
-    dash = ' stroke-dasharray="4 4"' if dashed else ""
-    return (
-        f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="6" fill="{fill}" '
-        f'stroke="{stroke}" stroke-width="{weight}"{dash}/>'
-        f'<text x="{x + w/2}" y="{y + h/2 + 4}" text-anchor="middle" '
-        f'font-family="{FONT}" font-size="11" fill="{stroke}">{label}</text>'
-    )
+def esc(s):
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def arrow(x1, x2, y, colour, head=5):
-    return (f'<line x1="{x1}" y1="{y}" x2="{x2 - head}" y2="{y}" stroke="{colour}" '
-            f'stroke-width="1.5"/>'
-            f'<path d="M{x2},{y} L{x2 - head - 2},{y - 3.5} L{x2 - head - 2},{y + 3.5} Z" '
-            f'fill="{colour}"/>')
+def txt(x, y, s, size=12, fill=INK, weight=400, font=FONT, anchor="start",
+        track=0, opacity=1):
+    ls = f' letter-spacing="{track}"' if track else ""
+    op = f' opacity="{opacity}"' if opacity != 1 else ""
+    return (f'<text x="{x}" y="{y}" text-anchor="{anchor}" font-family="{font}" '
+            f'font-size="{size}" font-weight="{weight}" fill="{fill}"{ls}{op}>{esc(s)}</text>')
 
 
-def render(name):
-    t = THEMES[name]
-    o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
-         f'viewBox="0 0 {W} {H}" role="img" '
-         f'aria-label="orchestration-design. Left: the five-box agent diagram everyone '
-         f'draws, greyed out and struck through. Right: the two-node design the work '
-         f'actually needed, in blue. Tagline: decide how much orchestration your work '
-         f'actually needs. Usually less than you think.">']
+def render():
+    o = []
     a = o.append
+    a(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
+      f'role="img" aria-label="orchestration-design. A Claude Code skill that decides how much '
+      f'orchestration your work actually needs, and usually concludes it is less than you think. '
+      f'The evidence: a widely quoted 90.2 percent multi-agent win used 15 times the tokens, and '
+      f'token spend alone explained 80 percent of the performance variance. Six levels, twelve '
+      f'markdown files, zero dependencies, seven cited sources, MIT licence.">')
 
-    # ---- wordmark -------------------------------------------------------
-    a(f'<text x="60" y="76" font-family="{MONO}" font-size="34" font-weight="600" '
-      f'fill="{t["ink"]}" letter-spacing="-0.5">orchestration-design</text>')
-    a(f'<text x="60" y="108" font-family="{FONT}" font-size="16" fill="{t["muted"]}">'
-      f'Decide how much orchestration your work actually needs — usually less than you think.</text>')
-    a(f'<line x1="60" y1="136" x2="{W-60}" y2="136" stroke="{t["rule"]}" stroke-width="1"/>')
+    # ---------- canvas ----------
+    a('<defs>'
+      f'<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">'
+      f'<stop offset="0%" stop-color="{BG0}"/><stop offset="100%" stop-color="{BG1}"/></linearGradient>'
+      f'<linearGradient id="glow" x1="0" y1="0" x2="1" y2="0">'
+      f'<stop offset="0%" stop-color="{TEAL}" stop-opacity="0.16"/>'
+      f'<stop offset="60%" stop-color="{TEAL}" stop-opacity="0"/></linearGradient>'
+      f'<linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">'
+      f'<stop offset="0%" stop-color="{TEAL}" stop-opacity="0.55"/>'
+      f'<stop offset="100%" stop-color="{TEAL}" stop-opacity="0"/></linearGradient>'
+      '</defs>')
+    a(f'<rect width="{W}" height="{H}" fill="url(#bg)"/>')
+    a(f'<rect width="{W}" height="{H}" fill="url(#glow)"/>')
 
-    # ---- left: the diagram everyone draws --------------------------------
-    a(f'<text x="60" y="176" font-family="{FONT}" font-size="11" font-weight="600" '
-      f'letter-spacing="0.09em" fill="{t["faint"]}">WHAT YOU WERE ABOUT TO BUILD</text>')
-    labels = ["plan", "research", "write", "review", "format"]
-    x, y, bw, bh, gap = 60, 200, 86, 42, 22
-    for i, lab in enumerate(labels):
-        bx = x + i * (bw + gap)
-        a(box(bx, y, bw, bh, t["stale"], lab, t, dashed=True))
-        if i < len(labels) - 1:
-            a(arrow(bx + bw, bx + bw + gap, y + bh / 2, t["stale"]))
-    span = len(labels) * bw + (len(labels) - 1) * gap
-    a(f'<line x1="{x - 6}" y1="{y + bh/2}" x2="{x + span + 6}" y2="{y + bh/2}" '
-      f'stroke="{t["stale"]}" stroke-width="2"/>')          # struck through
-    a(f'<text x="{x}" y="{y + bh + 26}" font-family="{FONT}" font-size="12" '
-      f'fill="{t["faint"]}">5 agents · ~15× the tokens · you cannot tell which box was wrong</text>')
+    # ---------- chrome ----------
+    a(txt(60, 40, "ORCHESTRATION-DESIGN / MAIN / CLAUDE CODE SKILL", 10.5, FAINT, 600, track=2.4))
+    a(txt(W - 60, 40, "github.com/elementalsouls/orchestration-design", 10.5, FAINT,
+          500, MONO, anchor="end"))
+    a(f'<line x1="60" y1="58" x2="{W-60}" y2="58" stroke="{RULE}" stroke-width="1"/>')
 
-    # ---- right: what it actually was ------------------------------------
-    rx = x + span + 84
-    a(f'<text x="{rx}" y="176" font-family="{FONT}" font-size="11" font-weight="600" '
-      f'letter-spacing="0.09em" fill="{t["accent"]}">WHAT THE WORK ACTUALLY NEEDED</text>')
-    a(box(rx, y, 116, bh, t["accent"], "agent + tools", t, weight=2))
-    a(arrow(rx + 116, rx + 116 + 26, y + bh / 2, t["accent"]))
-    a(box(rx + 142, y, 116, bh, t["accent"], "checker", t, weight=2))
-    a(f'<text x="{rx}" y="{y + bh + 26}" font-family="{FONT}" font-size="12" '
-      f'fill="{t["muted"]}">2 nodes · debuggable with a print statement</text>')
+    # ---------- mark: many nodes collapsing to one ----------
+    cx, cy, r = 128, 168, 54
+    a(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{RULE}" stroke-width="1.5"/>')
+    import math
+    for i in range(5):                      # the five boxes everyone draws, faint
+        ang = math.radians(-90 + i * 72)
+        px, py = cx + r * math.cos(ang), cy + r * math.sin(ang)
+        a(f'<line x1="{px:.1f}" y1="{py:.1f}" x2="{cx}" y2="{cy}" stroke="{AMBER}" '
+          f'stroke-width="1.2" opacity="0.30"/>')
+        a(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="5" fill="none" stroke="{AMBER}" '
+          f'stroke-width="1.4" opacity="0.55"/>')
+    a(f'<circle cx="{cx}" cy="{cy}" r="13" fill="{TEAL}"/>')          # the one you needed
+    a(f'<circle cx="{cx}" cy="{cy}" r="21" fill="none" stroke="{TEAL}" stroke-width="1.6" opacity="0.5"/>')
 
-    # ---- footer ---------------------------------------------------------
-    a(f'<text x="60" y="{H-28}" font-family="{FONT}" font-size="12.5" fill="{t["muted"]}">'
-      f'A Claude Code skill · 12 markdown files · no dependencies, no engine, nothing to run</text>')
+    # ---------- wordmark ----------
+    # one <text> with tspans: the renderer computes advance widths, so the parts
+    # cannot overlap even if its mono metrics differ from the generator's
+    a(f'<text x="214" y="196" font-family="{MONO}" font-size="62" font-weight="700" '
+      f'letter-spacing="-2" fill="{INK}">orchestration'
+      f'<tspan fill="{FAINT}" font-weight="300"> / </tspan>'
+      f'<tspan fill="{TEAL}">design</tspan></text>')
+    a(f'<line x1="214" y1="216" x2="880" y2="216" stroke="url(#rule)" stroke-width="2.5"/>')
+
+    # ---------- feature strip ----------
+    for i, (label, x) in enumerate((("DESIGN GATE, NOT A GRAPH BUILDER", 216),
+                                    ("EVIDENCE-BACKED", 592),
+                                    ("ANY RUNTIME — OR NONE", 800))):
+        a(txt(x, 244, "+", 12, TEAL, 700))
+        a(txt(x + 13, 244, label, 11, DIM, 600, track=1.5))
+
+    a(txt(216, 278, "Decides how much orchestration your work actually needs — and usually "
+                    "concludes it's less than you think.", 15.5, DIM))
+
+    # ---------- metadata card ----------
+    bx, by, bw, bh = W - 60 - 268, 96, 268, 108
+    a(f'<rect x="{bx}" y="{by}" width="{bw}" height="{bh}" rx="7" fill="{CARD}" '
+      f'stroke="{TEAL}" stroke-width="1.2" opacity="0.95"/>')
+    a(f'<circle cx="{bx+18}" cy="{by+22}" r="4" fill="{TEAL}"/>')
+    a(txt(bx + 30, by + 26, "LOADS ON TOPIC", 10.5, TEAL, 700, track=1.8))
+    a(f'<line x1="{bx+16}" y1="{by+38}" x2="{bx+bw-16}" y2="{by+38}" stroke="{RULE}"/>')
+    for i, (k, v) in enumerate((("LICENCE", "MIT"), ("AUTHOR", "Sachin Sharma"),
+                                ("UPDATED", "2026-08"))):
+        y = by + 58 + i * 19
+        a(txt(bx + 16, y, k, 9.5, FAINT, 600, track=1.4))
+        a(txt(bx + bw - 16, y, v, 10.5, DIM, 500, anchor="end"))
+
+    # ---------- the evidence ----------
+    a(f'<line x1="60" y1="322" x2="{W-60}" y2="322" stroke="{RULE}"/>')
+    a(txt(60, 350, "THE EVIDENCE — WHY \"LESS THAN YOU THINK\" IS A CLAIM, NOT AN OPINION",
+          10.5, FAINT, 700, track=2.2))
+
+    ev = ((60,  "90.2%", AMBER, "the multi-agent win everyone quotes",
+           "Anthropic, multi-agent research system"),
+          (498, "15×", AMBER, "the token cost in that same footnote",
+           "same paper, rarely repeated"),
+          (936, "80%", TEAL, "of the variance explained by spend alone",
+           "not by architecture"))
+    for x, big, colour, line1, line2 in ev:
+        a(txt(x, 412, big, 44, colour, 700, MONO, track=-1))
+        a(txt(x, 438, line1, 12.5, DIM, 500))
+        a(txt(x, 456, line2, 11, FAINT, 400))
+
+    a(txt(60, 492, "Two follow-ups held compute constant. Under matched budgets a single agent was "
+                   "best or statistically indistinguishable from best at every budget but the lowest.",
+          12.5, DIM))
+
+    # ---------- stats + install ----------
+    a(f'<line x1="60" y1="516" x2="{W-60}" y2="516" stroke="{RULE}"/>')
+    stats = (("6", "LEVELS"), ("12", "FILES"), ("0", "DEPENDENCIES"),
+             ("7", "CITED SOURCES"), ("13", "DEFECTS SELF-FOUND"))
+    for i, (n, lab) in enumerate(stats):
+        x = 60 + i * 138
+        a(f'<text x="{x}" y="552" font-family="{MONO}" font-size="27" font-weight="700" '
+          f'fill="{TEAL}">{n}'
+          f'<tspan font-family="{FONT}" font-size="9.5" font-weight="600" fill="{FAINT}" '
+          f'letter-spacing="1.3" dx="7"> {lab}</tspan></text>')
+
+    a(f'<rect x="{W-60-430}" y="530" width="430" height="30" rx="5" fill="{CARD}" stroke="{RULE}"/>')
+    a(txt(W - 60 - 414, 550, "$", 11.5, TEAL, 700, MONO))
+    a(txt(W - 60 - 400, 550, "./build.sh", 11.5, INK, 500, MONO))
+    a(txt(W - 60 - 16, 550, "no engine · nothing to run", 10, FAINT, 400, MONO, anchor="end"))
+
     a("</svg>")
     return "\n".join(o)
 
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    for name in THEMES:
-        p = OUT / f"banner-{name}.svg"
-        p.write_text(render(name))
-        print(f"  wrote {p.relative_to(OUT.parent.parent)} ({p.stat().st_size:,} bytes)")
+    p = OUT / "banner.svg"
+    p.write_text(render())
+    print(f"  wrote {p.relative_to(OUT.parent.parent)} ({p.stat().st_size:,} bytes)")
 
 
 if __name__ == "__main__":

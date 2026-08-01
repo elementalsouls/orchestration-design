@@ -1,7 +1,4 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/img/banner-dark.svg">
-  <img alt="orchestration-design — decide how much orchestration your work actually needs, usually less than you think. Left: the five-box agent diagram everyone draws, greyed out and struck through. Right: the two-node design the work actually needed." src="docs/img/banner-light.svg">
-</picture>
+![orchestration-design — a Claude Code skill that decides how much orchestration your work actually needs, and usually concludes it is less than you think. The evidence: a widely quoted 90.2% multi-agent win used 15x the tokens, and token spend alone explained 80% of the performance variance. Six levels, twelve markdown files, zero dependencies, seven cited sources.](docs/img/banner.svg)
 
 # orchestration-design
 
@@ -63,17 +60,28 @@ When the work **genuinely** needs structure, the same ladder says so — and nam
 
 ---
 
-## Why "usually less than you think" is a claim, not an opinion
+## The research this is built on
 
-Every framework's docs show the same picture: five boxes with arrows. It looks like engineering. So you build it, it costs ~15× what you expected, runs slower than one agent would have, and when it's wrong you can't tell which box did it.
+This skill is not a set of opinions about architecture. It is a reading of the 2025–2026 literature, turned into a decision procedure. Every default in it traces to one of these.
 
-From the 2026 literature:
+| Source | What it establishes | Weight |
+|---|---|---|
+| [Anthropic — *How we built our multi-agent research system*](https://www.anthropic.com/engineering/multi-agent-research-system) | The **90.2%** multi-agent win everyone quotes — and the footnote almost nobody repeats: it used **~15× the tokens**, and **token spend alone explained 80% of the performance variance**. | Production report |
+| [Tran & Kiela — *Single-Agent LLMs Outperform Multi-Agent Systems Under Equal Thinking Token Budgets*](https://arxiv.org/abs/2604.02460) | Holds compute constant. A single agent was **best or statistically indistinguishable from best at every budget except the lowest**. | **Controlled experiment** |
+| [*The Illusion of Multi-Agent Advantage*](https://arxiv.org/abs/2606.13003) | Replicates that across GPQA, SWE-bench and BrowseCompPlus. Most of the advantage disappears under matched budgets. | **Controlled experiment** |
+| [Cemri et al. — *Why Do Multi-Agent LLM Systems Fail?*](https://arxiv.org/abs/2503.13657) · NeurIPS 2025 | The MAST failure taxonomy, and the measured correctness: ChatDev **33.3%** on ProgramDev, AppWorld **86.7% failure** on cross-app tests. | Peer-reviewed |
+| [Cognition — *Don't Build Multi-Agents*](https://cognition.com/blog/dont-build-multi-agents) (2025) | Why parallel writers making conflicting implicit decisions is the failure mode that killed agent-swarm designs industry-wide. | Practitioner |
+| [Cognition — *Multi-Agents: What's Actually Working*](https://cognition.com/blog/multi-agents-working) (2026) | The **single-writer rule** — the one structural constraint that survives contact with production. | Practitioner |
+| [aibuilderclub — *Graph Engineering Guide 2026*](https://www.aibuilderclub.com/blog/graph-engineering-guide-2026) | The original checklist this skill grew out of. | Practitioner |
 
-- Anthropic's widely-quoted result — multi-agent beating single-agent by **90.2%** — came with a footnote almost nobody repeats: it used **~15× the tokens**, and **token spend alone explained 80% of the performance variance**.
-- Two follow-up papers held compute constant. Most of the advantage disappeared. Under matched thinking-token budgets a single agent was **best or statistically indistinguishable from best at every budget except the lowest**.
-- Across seven multi-agent frameworks, measured correctness was poor — ChatDev at **33.3%** on ProgramDev, AppWorld at **86.7% failure** on cross-app tests.
+**The conclusion the papers converge on:** most people building agent systems right now are paying multi-agent prices for single-agent quality.
 
-**Most people building agent systems right now are paying multi-agent prices for single-agent quality.** Full citations in [Sources](#sources); the reasoning is in `references/evidence.md`, which separates controlled experiments from single-company production reports.
+Two rules fall out of that, and they hold at every level of the ladder:
+
+1. **One writer. Always.** Extra nodes contribute judgement, never edits.
+2. **Structure does not buy intelligence.** Climbing costs money and reliability. Most reported multi-agent wins track token spend, not architecture.
+
+`references/evidence.md` carries the full reading, **dated**, and separates controlled experiments from single-company production reports — so you can see the shelf life and weigh each claim yourself. If the models get dramatically better at coordinating, the loop-first default weakens, and the file says so.
 
 ---
 
@@ -190,11 +198,6 @@ references/
     durable-workflow.md
 ```
 
-Two rules hold at every level, and both come from the evidence:
-
-1. **One writer. Always.** Extra nodes contribute judgement, never edits.
-2. **Structure does not buy intelligence.** At matched token budgets a single agent matches or beats multi-agent designs. Climbing costs money and reliability.
-
 ---
 
 ## Install
@@ -245,18 +248,6 @@ The four authored runs, where the ladder discriminated rather than giving one an
 Six trials is not a track record. But it was enough to find **thirteen defects in the skill itself**, every one from *using* it rather than reading it. The cold runs alone caught six: file references to things the bundle doesn't ship, a design smell that fired on correct designs, a verification phase that assumed a reviewer which levels 1–2 don't have, a spend budget that assumed tokens where nothing costs tokens, an ambiguity about whether Phase 0 asks or assumes, and no prompt anywhere about legal or ethical bounds for a tool that touches third-party data.
 
 None of those would have surfaced from re-reading the file. That is the method worth stealing more than anything else here: **have something with no memory of writing it try to follow it.**
-
----
-
-## Sources
-
-- [Anthropic — How we built our multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system) — the 90.2% claim, 15× token cost, 80%-of-variance finding
-- [Tran & Kiela — Single-Agent LLMs Outperform Multi-Agent Systems Under Equal Thinking Token Budgets](https://arxiv.org/abs/2604.02460) — the controlled comparison
-- [The Illusion of Multi-Agent Advantage](https://arxiv.org/abs/2606.13003) — replication across GPQA, SWE-bench, BrowseCompPlus
-- [Cemri et al. — Why Do Multi-Agent LLM Systems Fail?](https://arxiv.org/abs/2503.13657) (NeurIPS 2025) — the MAST taxonomy and failure rates
-- [Cognition — Don't Build Multi-Agents](https://cognition.com/blog/dont-build-multi-agents) (2025)
-- [Cognition — Multi-Agents: What's Actually Working](https://cognition.com/blog/multi-agents-working) (2026) — the single-writer rule
-- Original checklist: [aibuilderclub — Graph Engineering Guide 2026](https://www.aibuilderclub.com/blog/graph-engineering-guide-2026)
 
 ---
 
