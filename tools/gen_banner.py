@@ -42,6 +42,50 @@ def txt(x, y, s, size=12, fill=INK, weight=400, font=FONT, anchor="start",
             f'font-size="{size}" font-weight="{weight}" fill="{fill}"{ls}{op}>{esc(s)}</text>')
 
 
+def mark():
+    """The identity mark: the ladder, with level 3 lit.
+
+    Deliberately NOT a graph. The previous mark was a ring of nodes all wired to
+    a bright centre — which is a supervisor with five workers, the exact topology
+    this skill exists to argue against. A logo that asserts the opposite of the
+    thesis is worse than no logo.
+
+    The ladder is the actual product: six levels, stop at the first one that
+    holds, and level 3 is the default. Rails matter — six bars without them read
+    as a hamburger menu or a bar chart. Rungs above the lit one are dimmest:
+    those are the climbs you rarely need.
+    """
+    o = []
+    a = o.append
+
+    X0, X1 = 94, 160                        # rails
+    LIT = 3                                 # the default level
+    y_of = {lvl: 217 - (lvl - 1) * 19 for lvl in range(1, 7)}
+
+    a(f'<line x1="{X0}" y1="112" x2="{X0}" y2="227" stroke="{FAINT}" '
+      f'stroke-width="1.6" opacity="0.5"/>')
+    a(f'<line x1="{X1}" y1="112" x2="{X1}" y2="227" stroke="{FAINT}" '
+      f'stroke-width="1.6" opacity="0.5"/>')
+
+    for lvl, y in y_of.items():
+        if lvl == LIT:
+            continue
+        # above the default is dimmer than below it: 1 and 2 are common correct
+        # outcomes, 4 to 6 are the rare earned climbs
+        op = 0.28 if lvl > LIT else 0.55
+        a(f'<line x1="{X0}" y1="{y}" x2="{X1}" y2="{y}" stroke="{FAINT}" '
+          f'stroke-width="3" opacity="{op}" stroke-linecap="round"/>')
+
+    ly = y_of[LIT]
+    a(f'<line x1="{X0}" y1="{ly}" x2="{X1}" y2="{ly}" stroke="{TEAL}" '
+      f'stroke-width="4.5" stroke-linecap="round"/>')
+    a(f'<circle cx="82" cy="{ly}" r="4.5" fill="{TEAL}"/>')      # you are here
+    a(f'<text x="170" y="{ly + 4}" font-family="{MONO}" font-size="11" '
+      f'font-weight="700" fill="{TEAL}">3</text>')
+
+    return "\n".join(o)
+
+
 def render():
     o = []
     a = o.append
@@ -72,19 +116,7 @@ def render():
           500, MONO, anchor="end"))
     a(f'<line x1="60" y1="58" x2="{W-60}" y2="58" stroke="{RULE}" stroke-width="1"/>')
 
-    # ---------- mark: many nodes collapsing to one ----------
-    cx, cy, r = 128, 168, 54
-    a(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{RULE}" stroke-width="1.5"/>')
-    import math
-    for i in range(5):                      # the five boxes everyone draws, faint
-        ang = math.radians(-90 + i * 72)
-        px, py = cx + r * math.cos(ang), cy + r * math.sin(ang)
-        a(f'<line x1="{px:.1f}" y1="{py:.1f}" x2="{cx}" y2="{cy}" stroke="{AMBER}" '
-          f'stroke-width="1.2" opacity="0.30"/>')
-        a(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="5" fill="none" stroke="{AMBER}" '
-          f'stroke-width="1.4" opacity="0.55"/>')
-    a(f'<circle cx="{cx}" cy="{cy}" r="13" fill="{TEAL}"/>')          # the one you needed
-    a(f'<circle cx="{cx}" cy="{cy}" r="21" fill="none" stroke="{TEAL}" stroke-width="1.6" opacity="0.5"/>')
+    a(mark())
 
     # ---------- wordmark ----------
     # one <text> with tspans: the renderer computes advance widths, so the parts
@@ -159,10 +191,16 @@ def render():
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser(description="Generate the README banner.")
+    ap.add_argument("--out", default=None, help="write here instead of docs/img/banner.svg")
+    args = ap.parse_args()
+
     OUT.mkdir(parents=True, exist_ok=True)
-    p = OUT / "banner.svg"
+    p = Path(args.out) if args.out else OUT / "banner.svg"
+    p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(render())
-    print(f"  wrote {p.relative_to(OUT.parent.parent)} ({p.stat().st_size:,} bytes)")
+    print(f"  wrote {p} ({p.stat().st_size:,} bytes)")
 
 
 if __name__ == "__main__":
