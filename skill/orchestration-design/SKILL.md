@@ -12,7 +12,7 @@ Decide how much structure the work needs, design it on paper, show it to the hum
 Two rules hold at every level, and both come from `references/evidence.md`:
 
 1. **One writer. Always.** Extra nodes contribute judgement, never edits. Parallel writers making conflicting implicit decisions is the failure mode that killed agent-swarm designs industry-wide.
-2. **Structure does not buy intelligence.** At matched token budgets a single agent matches or beats multi-agent designs. Climbing costs money and reliability. Most reported multi-agent wins track token spend, not architecture.
+2. **Structure does not buy intelligence.** At matched token budgets a single agent matches or beats multi-agent designs. The reason is information-theoretic, not empirical: by the **Data Processing Inequality**, a subagent's message is a function of the context it saw, so a handoff can lose information but never create it. The measured exception is **context degradation** — once effective context is degraded enough (α = 0.7 in Tran & Kiela), multi-agent does overtake. That is the honest bound on this rule, and it is why the level-5 trigger is context pressure rather than parallelism.
 
 **Two tracks.** Building something new → phases 0 → 1 → 2 → 2.5 → 3 → 4 below. Something already exists and has rotted → read `references/auditing-an-existing-graph.md`, then rejoin at Phase 2.
 
@@ -67,21 +67,9 @@ Read `references/graph-design.md`. Produce exactly five parts:
 
 ### Before you draw a loop-back, check its premise
 
-**Name the state the re-entry point reads, then name the node inside the loop that writes it.** If no node in the cycle writes that field, the loop is decorative: it will run, consume its bounds, and terminate having changed nothing. Grep for the writer before you draw the edge — it costs one command and it is the cheapest design error to catch.
+**Name the state the re-entry point reads, then name the node inside the loop that writes it.** If no node in the cycle writes that field, the loop is decorative: it runs, consumes its bounds, and terminates having changed nothing. Grep for the writer before you draw the edge.
 
-```
-loop-back edge:   verify ──► map
-map reads:        surface
-who writes surface inside the loop?   grep -n 'add_surface' engine/*.py
-  -> only recon(), which is OUTSIDE the loop   ==> DECORATIVE. Delete the edge.
-```
-
-This fails in both directions and both are common:
-
-- **A cycle whose re-entry has no writer.** The design looks iterative and runs as a straight line with extra rounds. Symptom: round 2 onward does no work, every run reaches the dry condition immediately.
-- **A straight line whose work is actually iterative.** Discovery feeds discovery — a finding reveals new inputs, a source reveals new sources — and a single pass silently stops at the first layer. Symptom: the output is complete-looking and shallow, and a human doing the same task by hand keeps going.
-
-The test is the same for both: *does any node in the loop write the state the loop re-reads?* Answer it from the code or the process, not from intuition. Intuition gets this wrong in both directions.
+It fails both ways and neither is rare — a cycle whose re-entry has no writer (round 2 onward does no work), and a straight line for work that genuinely iterates (a complete-looking, shallow single pass). Same test for both: *does any node in the loop write the state the loop re-reads?* Answer from the code or the process, never from intuition — intuition gets this wrong in both directions. Worked example and both symptoms: `references/graph-design.md`.
 
 **Landed on level 1 or 2? Take the exit ramp.** This is the most common outcome and it gets the **lightest** paperwork, not the heaviest. Produce the stages with their kinds (a list, not a table), one diagram, the bounds from part 4, one line of cost — *"zero model calls, zero tokens"* plus a sentence on what climbing would buy, no table — and the runtime recommendation. Nothing else.
 
@@ -91,15 +79,17 @@ The test is the same for both: *does any node in the loop write the state the lo
 
 Do not go straight from design to code. Hand over, in one message:
 
-1. an **ASCII sketch** of the flow — readable in the terminal with nothing installed. Skip it above ~8 nodes, where ASCII stops helping.
-2. the **Mermaid block** — the source of truth, and the only thing Phase 4 asserts against.
-3. a **mermaid.live link** if you can build one — the editor encodes its whole state as zlib-compressed JSON, base64url-encoded, in the URL fragment after `#pako:`. If that is awkward, tell them to paste the block into <https://mermaid.live> instead; the point is that editing costs them nothing. **Say that the diagram travels in the URL fragment, which browsers never send to the server — nothing is uploaded.** For a proprietary architecture that reassurance matters, and if they would still rather not, a local Mermaid preview does the same job.
+1. an **ASCII sketch** of the flow — **keep every line under 76 columns** so it survives an 80-column terminal unwrapped; a wrapped diagram is worse than none. Skip it above ~8 nodes, where ASCII stops helping.
+2. the **Mermaid block** — the source of truth, and the only thing Phase 4 asserts against. **Break labels with `<br/>`, never `\n`** — `\n` is version-dependent and commonly renders literally, which hands the human a broken diagram at the exact moment they are asked to read one.
+3. a **mermaid.live link** if you can build one (state is zlib+base64url in the `#pako:` fragment), else tell them to paste the block into <https://mermaid.live>. Either way **say the diagram travels in the URL fragment, which browsers never send to a server** — for a proprietary architecture that reassurance is the difference between them opening it and not.
 4. the **stages/nodes**, **bounds**, and **cost** — at levels 1–2 in the exit-ramp form above, at levels 3+ the full node, state and cost tables
 5. the **level chosen and its trigger**
 
 Whatever they hand back is the source of truth — update the tables to match the edited diagram rather than arguing with it. The ASCII is a preview and may drift: **never assert against it**, and never let an image replace the Mermaid. Text is the only form a human can edit *and* Phase 4 can check.
 
-**Ask one specific question, not "does this look good?"** Ask *"which node would you delete?"* or *"is any of this state written by two things?"*. Open approval questions get "looks fine"; specific ones get real answers, and people cut more than they add once they can see the shape.
+**Budget the handover.** Diagram, tables and question inside roughly one screen of scrollback — target under ~120 lines total. This is a decision point, not a document: if the reader has to scroll past the diagram to find the question, the gate has already failed. Push depth into the tables and cut prose, not parts.
+
+**Ask one specific question, not "does this look good?"** — and put it **last**, where the eye lands. Ask *"which node would you delete?"* or *"is any of this state written by two things?"*. Open approval questions get "looks fine"; specific ones get real answers, and people cut more than they add once they can see the shape.
 
 ### This is a hard stop
 
@@ -109,9 +99,7 @@ Whatever they hand back is the source of truth — update the tables to match th
 
 ## Phase 3 — Choose a target, then implement
 
-**3a. Choose the substrate.** First ask what the output actually *is*, because it decides everything below.
-
-**Is the output a system, or a process?** A system is code that will run without you — a pipeline, a job, a service. A process is work that runs *with* you — a research project, an audit, a migration, a manuscript, a hiring round — where the nodes are prompts, subagents and human decisions, and there is no runtime to compile. Both are orchestration and the method is identical; only the substrate differs.
+**3a. Choose the substrate — is the output a system, or a process?** A system runs without you (pipeline, job, service). A process runs *with* you (research, an audit, a migration, a manuscript) — nodes are prompts, subagents and human decisions, and there is no runtime to compile. Same method either way; only the substrate differs.
 
 | Situation | Target file in `references/targets/` |
 |---|---|
