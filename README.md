@@ -23,7 +23,7 @@ Then say *"my pipeline is a mess"* or *"I'm stuck in a loop"*. The skill loads i
 
 Runs on **Claude Code** and **Hermes**. `./build.sh` installs for Claude Code; on Hermes, point it at the `skill/orchestration-design/` directory — the package is portable because it is markdown with no runtime, no imports and no build step.
 
-Built by **[Sachin Sharma](https://www.linkedin.com/in/sachinsharma8080/)** — Bug Hunting & GenAI Security Research.
+Built by **[Sachin Sharma](https://www.linkedin.com/in/sachinsharma8080/)** — AI Systems Engineering. MIT licensed.
 
 ---
 
