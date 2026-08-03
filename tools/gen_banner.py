@@ -32,7 +32,7 @@ from pathlib import Path
 OUT = Path(__file__).resolve().parent.parent / "docs" / "img"
 
 # ---- page ------------------------------------------------------------------
-W, H = 1400, 608
+W = 1400                                  # H is derived once the bands are laid out
 M = 60                                    # page margin, every band honours it
 MARGIN_Y = 30                             # top ink to canvas, and canvas to bottom ink
 
@@ -59,32 +59,40 @@ INK_ASC = {10: 10, 11: 10, 12: 12, 14: 14, 24: 22, 26: 25, 58: 54}
 INK_DESC = {10: 2, 11: 2, 12: 3, 14: 3, 24: 6, 26: 6, 58: 14}
 
 LEAD = 8                                  # breathing space under a column header
+GAP = 28                                  # the only gap between bands, everywhere
 
 # ---- chrome ----------------------------------------------------------------
 CHROME_BASE = MARGIN_Y + INK_ASC[10]      # 40
-RULE_Y = 58
+RULE_Y = CHROME_BASE + INK_DESC[10] + GAP // 2     # 56 — a hairline gets half a gap
 
 # ---- hero band -------------------------------------------------------------
 # The wordmark and the two-line hook are one optical block; the ladder and the
 # metadata card are centred on it, so all three share a midline.
-WORD_X, WORD_BASE, WORD_SIZE = 192, 176, 58
-HOOK_BASE_1, HOOK_BASE_2, HOOK_SIZE = 232, 264, 26
-HERO_TOP = WORD_BASE - INK_ASC[WORD_SIZE]          # 122
-HERO_BOT = HOOK_BASE_2 + INK_DESC[HOOK_SIZE]       # 270
-HERO_MID = (HERO_TOP + HERO_BOT) // 2              # 196
+#
+# Bands used to be positioned by hand, which left 64px of dead air under the
+# rule, 8px between the hero and the pillars, and 22px between the pillars and
+# the terminal — the same total space, distributed so badly the top of the
+# banner read as empty. Every band edge below is now derived from GAP.
+WORD_X, WORD_SIZE, HOOK_SIZE = 192, 58, 26
+HERO_TOP = RULE_Y + GAP                            # 84
+WORD_BASE = HERO_TOP + INK_ASC[WORD_SIZE]          # 138
+HOOK_BASE_1 = WORD_BASE + INK_DESC[WORD_SIZE] + 17 + INK_ASC[HOOK_SIZE]   # 194
+HOOK_BASE_2 = HOOK_BASE_1 + 32                     # 226 — line height for 26px
+HERO_BOT = HOOK_BASE_2 + INK_DESC[HOOK_SIZE]       # 232
+HERO_MID = (HERO_TOP + HERO_BOT) // 2              # 158
 
 LADDER_STEP, LADDER_OV, NODE_R = 22, 14, 7.5
 LADDER_X0 = M + NODE_R                    # lit node's outer edge lands on the margin
 LADDER_X1 = LADDER_X0 + 70
 # rails run y_base-5*STEP-OV .. y_base+OV, so the midline is y_base - 2.5*STEP
-LADDER_BASE = HERO_MID + 2.5 * LADDER_STEP         # 251
+LADDER_BASE = HERO_MID + 2.5 * LADDER_STEP         # 213
 LADDER_LIT = 3
 
 META_W, META_H = 300, 118
 META_X, META_Y = W - M - META_W, HERO_MID - META_H // 2
 
 # ---- pillar band -----------------------------------------------------------
-CARD_Y, CARD_H = 278, 112
+CARD_Y, CARD_H = HERO_BOT + GAP, 112       # 260
 CARD_W = (W - 2 * M - 44) // 3            # 3 cards, two 22px gutters, flush to both margins
 CARD_GAP = 22
 CARD_PAD_X = 22
@@ -93,19 +101,23 @@ PILLAR_L1 = PILLAR_HDR + INK_DESC[12] + LEAD + INK_ASC[14] + 5
 PILLAR_L2 = PILLAR_L1 + 22
 
 # ---- terminal band ---------------------------------------------------------
-TERM_Y, TERM_H = 412, 166
+TERM_Y, TERM_H = CARD_Y + CARD_H + GAP, 166        # 400
 TERM_W = W - 2 * M
 TERM_BAR = 36                             # title-bar height
 TERM_PAD = 26                             # inner gutter, both sides
+TERM_PAD_Y = 24                           # inner gutter, top and bottom of the body
 TERM_L = M + TERM_PAD
 TERM_R = M + TERM_W - TERM_PAD
 
 # Three rows. The two columns share the header row and the footer row; that is
 # what makes them read as one strip rather than two unrelated blocks.
-EV_HDR = TERM_Y + TERM_BAR + 24           # 472
-EV_BASE = EV_HDR + INK_DESC[10] + LEAD + INK_ASC[24]        # 504
-FOOT_BASE = TERM_Y + TERM_H - MARGIN_Y + INK_ASC[11] - INK_DESC[11] - 6   # 550
-EV_PITCH = 290                            # equal pitch: left edges form a grid
+EV_HDR = TERM_Y + TERM_BAR + TERM_PAD_Y + INK_ASC[10]       # 470
+EV_BASE = EV_HDR + INK_DESC[10] + LEAD + INK_ASC[24]        # 502
+FOOT_BASE = TERM_Y + TERM_H - TERM_PAD_Y - INK_DESC[11]     # 540
+H = TERM_Y + TERM_H + MARGIN_Y            # 596 — the canvas is whatever the bands need
+
+EV_PITCH = 310                            # equal pitch: left edges form a grid, and the
+                                          # row spans the space rather than clustering left
 EV_MAX_W = 221                            # widest rendered stat cell, measured in-browser
 EV_GUTTER = 24                            # smallest gap that still reads as separate cells
 
@@ -373,7 +385,13 @@ def _selftest() -> int:
     assert CARD_Y + CARD_H < TERM_Y, "pillar row runs into the terminal"
     assert BOX_Y + BOX_H < FOOT_BASE - INK_ASC[11], "command box runs into the footer"
 
-    # 10. it renders, and it renders the same way twice
+    # 10. one rhythm down the page. This is the check that was missing: the gaps
+    #     had been 64 / 8 / 22, which no assertion above objected to, because
+    #     nothing collided — it just left the top of the banner reading as empty.
+    gaps = [HERO_TOP - RULE_Y, CARD_Y - HERO_BOT, TERM_Y - (CARD_Y + CARD_H)]
+    assert set(gaps) == {GAP}, gaps
+
+    # 11. it renders, and it renders the same way twice
     svg = render()
     assert svg == render()
     assert svg.startswith("<svg") and svg.rstrip().endswith("</svg>")
