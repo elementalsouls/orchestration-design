@@ -3,9 +3,14 @@
 
 Full-bleed dark canvas, so one file works on both GitHub themes.
 
-The banner's job is to carry the evidence, because the evidence is the
-differentiator. Anyone can claim "you don't need multi-agent". This repo can
-put three numbers from controlled experiments on the front page and cite them.
+The banner leads with the hook, not the literature. The research is the
+differentiator, but "why should I believe you" is the second question a reader
+asks — the first is "what is this". So the claim gets the largest block and the
+three numbers sit condensed underneath, cited but not competing.
+
+Layout is hand-positioned and SVG text does not wrap, so any copy change needs
+the rendered result measured: every text node must stay inside the right margin
+or a column runs into its neighbour on a renderer whose font metrics differ.
 
     python3 tools/gen_banner.py      -> docs/img/banner.svg
 
@@ -97,6 +102,7 @@ def render():
       f'Runtime free: designs built for plain code, LangGraph, or any framework you choose. '
       f'Backed by 2026 AI research — a quoted 90.2 percent multi-agent win cost 15 times the '
       f'tokens, and 80 percent of the variance was spend rather than architecture. '
+      f'Built by Sachin Sharma, bug hunting and GenAI security research. '
       f'Installs in seconds with build.sh.">')
 
     # ---------- canvas ----------
@@ -135,6 +141,15 @@ def render():
     # takes nothing else off this image, it should be this.
     a(txt(214, 256, "Stop paying multi-agent prices", 27, INK, 700))
     a(txt(214, 290, "for single-agent quality.", 27, TEAL, 700))
+
+    # ---------- author ----------
+    # Right-aligned into the dead space beside the hook. It was previously a
+    # three-row card sitting directly under the headline, where it competed with
+    # the one sentence that matters; out here it credits without arguing.
+    a(f'<line x1="{W-60}" y1="238" x2="{W-60}" y2="298" stroke="{RULE}" stroke-width="2"/>')
+    a(txt(W - 76, 256, "BUILT BY", 9.5, FAINT, 700, track=2.2, anchor="end"))
+    a(txt(W - 76, 276, "Sachin Sharma", 15, INK, 600, anchor="end"))
+    a(txt(W - 76, 293, "Bug hunting & GenAI security research", 10.5, DIM, 400, anchor="end"))
 
     # ---------- the two engines, plus the portability ----------
     # Three columns because the product genuinely has three claims and the old
