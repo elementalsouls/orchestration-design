@@ -8,13 +8,21 @@ differentiator, but "why should I believe you" is the second question a reader
 asks — the first is "what is this". So the claim gets the largest block and the
 three numbers sit inside the terminal strip at the foot, cited but not competing.
 
-Layout is hand-positioned and SVG text does not wrap, so any copy change needs
-the rendered result measured: every text node must stay inside its container or
-a column runs into its neighbour on a renderer whose font metrics differ.
-Geometry is derived from the band constants rather than typed twice — move a
-band's y or change CARD_W and the pieces follow.
+**Every position here is derived, never typed twice.** Three rounds of hand-tuned
+coordinates drifted out of alignment in ways that survived an overlap check and
+only showed up once someone looked at the picture: a ladder 8px off the page
+margin, evidence stats with 49px and 20px gaps, two halves of one footer row on
+baselines 4px apart. So the geometry is now expressed as bands and pitches, and
+`--selftest` asserts the relationships that matter (shared margins, shared
+centres, shared baselines, uniform pitch). Move a band and the parts follow;
+break an alignment and the check fails.
 
-    python3 tools/gen_banner.py      -> docs/img/banner.svg
+What the self-test cannot cover is text *width*, which depends on the renderer's
+font metrics — SVG text does not wrap, so a copy change still needs the rendered
+result measured before it ships.
+
+    python3 tools/gen_banner.py         -> docs/img/banner.svg
+    python3 tools/gen_banner.py --selftest
 
 Self-contained: system font stack, no external references, no <style> media
 queries (GitHub does not honour them inside an <img>).
@@ -22,8 +30,11 @@ queries (GitHub does not honour them inside an <img>).
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parent.parent / "docs" / "img"
-W, H = 1400, 610
-M = 60                                    # page margin
+
+# ---- page ------------------------------------------------------------------
+W, H = 1400, 608
+M = 60                                    # page margin, every band honours it
+MARGIN_Y = 30                             # top ink to canvas, and canvas to bottom ink
 
 BG0, BG1 = "#0b1120", "#131c31"           # canvas gradient
 PANEL = "#0f172a"                         # card fill
@@ -40,13 +51,69 @@ GREEN = "#4ade80"                         # shell prompt
 FONT = "ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif"
 MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace"
 
-# ---- bands (the whole vertical budget, in one place) ------------------------
-HERO_Y = 122                              # metadata card top — set to the wordmark's cap height,
-                                          # so the card's top edge and the letterforms share a line
-CARD_Y, CARD_H = 278, 112                 # pillar row
-TERM_Y, TERM_H = 412, 166                 # terminal window
-CARD_W = (W - 2 * M - 44) // 3            # 3 cards, two 22px gutters
-LEAD = 8                                  # spacing under a column header
+# Ink extents above and below the baseline, per font size, measured from
+# getBBox() in a real renderer rather than assumed. Balancing padding by
+# baseline alone is what put the pillar copy 5px high in its card: a baseline is
+# not an edge, and the eye aligns edges.
+INK_ASC = {10: 10, 11: 10, 12: 12, 14: 14, 24: 22, 26: 25, 58: 54}
+INK_DESC = {10: 2, 11: 2, 12: 3, 14: 3, 24: 6, 26: 6, 58: 14}
+
+LEAD = 8                                  # breathing space under a column header
+
+# ---- chrome ----------------------------------------------------------------
+CHROME_BASE = MARGIN_Y + INK_ASC[10]      # 40
+RULE_Y = 58
+
+# ---- hero band -------------------------------------------------------------
+# The wordmark and the two-line hook are one optical block; the ladder and the
+# metadata card are centred on it, so all three share a midline.
+WORD_X, WORD_BASE, WORD_SIZE = 192, 176, 58
+HOOK_BASE_1, HOOK_BASE_2, HOOK_SIZE = 232, 264, 26
+HERO_TOP = WORD_BASE - INK_ASC[WORD_SIZE]          # 122
+HERO_BOT = HOOK_BASE_2 + INK_DESC[HOOK_SIZE]       # 270
+HERO_MID = (HERO_TOP + HERO_BOT) // 2              # 196
+
+LADDER_STEP, LADDER_OV, NODE_R = 22, 14, 7.5
+LADDER_X0 = M + NODE_R                    # lit node's outer edge lands on the margin
+LADDER_X1 = LADDER_X0 + 70
+# rails run y_base-5*STEP-OV .. y_base+OV, so the midline is y_base - 2.5*STEP
+LADDER_BASE = HERO_MID + 2.5 * LADDER_STEP         # 251
+LADDER_LIT = 3
+
+META_W, META_H = 300, 118
+META_X, META_Y = W - M - META_W, HERO_MID - META_H // 2
+
+# ---- pillar band -----------------------------------------------------------
+CARD_Y, CARD_H = 278, 112
+CARD_W = (W - 2 * M - 44) // 3            # 3 cards, two 22px gutters, flush to both margins
+CARD_GAP = 22
+CARD_PAD_X = 22
+PILLAR_HDR = CARD_Y + 34                  # header baseline; see the padding assertion
+PILLAR_L1 = PILLAR_HDR + INK_DESC[12] + LEAD + INK_ASC[14] + 5
+PILLAR_L2 = PILLAR_L1 + 22
+
+# ---- terminal band ---------------------------------------------------------
+TERM_Y, TERM_H = 412, 166
+TERM_W = W - 2 * M
+TERM_BAR = 36                             # title-bar height
+TERM_PAD = 26                             # inner gutter, both sides
+TERM_L = M + TERM_PAD
+TERM_R = M + TERM_W - TERM_PAD
+
+# Three rows. The two columns share the header row and the footer row; that is
+# what makes them read as one strip rather than two unrelated blocks.
+EV_HDR = TERM_Y + TERM_BAR + 24           # 472
+EV_BASE = EV_HDR + INK_DESC[10] + LEAD + INK_ASC[24]        # 504
+FOOT_BASE = TERM_Y + TERM_H - MARGIN_Y + INK_ASC[11] - INK_DESC[11] - 6   # 550
+EV_PITCH = 290                            # equal pitch: left edges form a grid
+EV_MAX_W = 221                            # widest rendered stat cell, measured in-browser
+EV_GUTTER = 24                            # smallest gap that still reads as separate cells
+
+BOX_W, BOX_H = 320, 44
+BOX_X = TERM_R - BOX_W
+# centred on the stat row's ink, not on its baseline
+BOX_Y = (EV_BASE - INK_ASC[24] + EV_BASE + INK_DESC[24]) // 2 - BOX_H // 2
+BOX_BASE = BOX_Y + BOX_H // 2 + 4         # one baseline for everything in the box
 
 
 def esc(s):
@@ -66,6 +133,11 @@ def panel(x, y, w, h, fill=PANEL, stroke=BORDER, rx=8, sw=1):
             f'stroke="{stroke}" stroke-width="{sw}"/>')
 
 
+def ladder_rungs():
+    """Level 1 at the bottom, counting up — a ladder is climbed, not read."""
+    return {lvl: LADDER_BASE - (lvl - 1) * LADDER_STEP for lvl in range(1, 7)}
+
+
 def mark():
     """The identity mark: a six-level node ladder, level 3 lit.
 
@@ -81,32 +153,27 @@ def mark():
     """
     o = []
     a = o.append
-
-    XL, XR = 76, 146                      # rails
-    LIT, STEP = 3, 24
-    # level 1 at the bottom, counting up — a ladder is climbed, not read.
-    # Base is tuned so the rails' midpoint lands on the title block's optical
-    # centre (wordmark cap to headline baseline), measured, not eyeballed.
-    y_of = {lvl: 246 - (lvl - 1) * STEP for lvl in range(1, 7)}
+    y_of = ladder_rungs()
+    XL, XR = LADDER_X0, LADDER_X1
 
     for x in (XL, XR):
-        a(f'<line x1="{x}" y1="{y_of[6] - 17}" x2="{x}" y2="{y_of[1] + 17}" '
+        a(f'<line x1="{x}" y1="{y_of[6] - LADDER_OV}" x2="{x}" y2="{y_of[1] + LADDER_OV}" '
           f'stroke="{BORDER}" stroke-width="2" stroke-linecap="round"/>')
 
     for lvl, y in y_of.items():
-        if lvl == LIT:
+        if lvl == LADDER_LIT:
             continue
-        op = 0.30 if lvl > LIT else 0.62
+        op = 0.30 if lvl > LADDER_LIT else 0.62
         a(f'<line x1="{XL}" y1="{y}" x2="{XR}" y2="{y}" stroke="{FAINT}" '
           f'stroke-width="2.5" opacity="{op}" stroke-linecap="round"/>')
         for x in (XL, XR):
             a(f'<circle cx="{x}" cy="{y}" r="4" fill="{FAINT}" opacity="{op + 0.15}"/>')
 
-    ly = y_of[LIT]
+    ly = y_of[LADDER_LIT]
     a(f'<line x1="{XL}" y1="{ly}" x2="{XR}" y2="{ly}" stroke="{CYAN}" '
       f'stroke-width="4" stroke-linecap="round" filter="url(#glow)"/>')
     for x in (XL, XR):
-        a(f'<circle cx="{x}" cy="{ly}" r="7.5" fill="{CYAN}" filter="url(#glow)"/>')
+        a(f'<circle cx="{x}" cy="{ly}" r="{NODE_R}" fill="{CYAN}" filter="url(#glow)"/>')
         a(f'<circle cx="{x}" cy="{ly}" r="3" fill="{BG0}"/>')
     a(f'<text x="{XR + 16}" y="{ly + 5}" font-family="{MONO}" font-size="13" '
       f'font-weight="700" fill="{CYAN}">3</text>')
@@ -146,40 +213,41 @@ def render():
     a(f'<rect width="{W}" height="{H}" fill="url(#wash)"/>')
 
     # ---------- chrome ----------
-    a(txt(M, 40, "ORCHESTRATION-DESIGN / MAIN / CLAUDE CODE + HERMES", 10.5, FAINT, 600, track=2.4))
-    a(txt(W - M, 40, "github.com/elementalsouls/orchestration-design", 10.5, FAINT,
-          500, MONO, anchor="end"))
-    a(f'<line x1="{M}" y1="58" x2="{W-M}" y2="58" stroke="{BORDER}" stroke-width="1"/>')
+    a(txt(M, CHROME_BASE, "ORCHESTRATION-DESIGN / MAIN / CLAUDE CODE + HERMES",
+          10, FAINT, 600, track=2.4))
+    a(txt(W - M, CHROME_BASE, "github.com/elementalsouls/orchestration-design",
+          10, FAINT, 500, MONO, anchor="end"))
+    a(f'<line x1="{M}" y1="{RULE_Y}" x2="{W-M}" y2="{RULE_Y}" stroke="{BORDER}" stroke-width="1"/>')
 
     a(mark())
 
     # ---------- wordmark + hook ----------
     # tspans, not separate <text>: the renderer computes advance widths, so the
     # parts cannot collide even where its mono metrics differ from ours
-    a(f'<text x="192" y="176" font-family="{MONO}" font-size="58" font-weight="700" '
-      f'letter-spacing="-2" fill="{INK}">orchestration'
+    a(f'<text x="{WORD_X}" y="{WORD_BASE}" font-family="{MONO}" font-size="{WORD_SIZE}" '
+      f'font-weight="700" letter-spacing="-2" fill="{INK}">orchestration'
       f'<tspan fill="{FAINT}" font-weight="300"> / </tspan>'
       f'<tspan fill="{CYAN}">design</tspan></text>')
     # the rule must outrun the wordmark (which ends near x=916) or the fade
     # finishes mid-word and reads as a clipped underline rather than a flourish
-    a(f'<line x1="192" y1="196" x2="980" y2="196" stroke="url(#rule)" stroke-width="2.5"/>')
+    a(f'<line x1="{WORD_X}" y1="{WORD_BASE + 20}" x2="980" y2="{WORD_BASE + 20}" '
+      f'stroke="url(#rule)" stroke-width="2.5"/>')
 
-    a(txt(192, 232, "Stop paying multi-agent prices", 26, INK, 700))
-    a(txt(192, 264, "for single-agent quality.", 26, CYAN, 700))
+    a(txt(WORD_X, HOOK_BASE_1, "Stop paying multi-agent prices", HOOK_SIZE, INK, 700))
+    a(txt(WORD_X, HOOK_BASE_2, "for single-agent quality.", HOOK_SIZE, CYAN, 700))
 
     # ---------- engine metadata card ----------
-    mw, mh = 300, 118
-    mx, my = W - M - mw, HERO_Y
-    a(panel(mx, my, mw, mh))
-    a(f'<circle cx="{mx+20}" cy="{my+24}" r="3.5" fill="{CYAN}" filter="url(#glow)"/>')
-    a(txt(mx + 32, my + 28, "ENGINE METADATA", 10, CYAN_DIM, 700, track=2))
-    a(f'<line x1="{mx+16}" y1="{my+40}" x2="{mx+mw-16}" y2="{my+40}" stroke="{BORDER}"/>')
+    a(panel(META_X, META_Y, META_W, META_H))
+    a(f'<circle cx="{META_X+20}" cy="{META_Y+24}" r="3.5" fill="{CYAN}" filter="url(#glow)"/>')
+    a(txt(META_X + 32, META_Y + 28, "ENGINE METADATA", 10, CYAN_DIM, 700, track=2))
+    a(f'<line x1="{META_X+16}" y1="{META_Y+40}" x2="{META_X+META_W-16}" y2="{META_Y+40}" '
+      f'stroke="{BORDER}"/>')
     for i, (k, v) in enumerate((("AUTHOR", "Sachin Sharma"),
                                 ("ROLE", "AI Systems Engineering"),
                                 ("LICENSE", "MIT"))):
-        y = my + 62 + i * 22
-        a(txt(mx + 16, y, k, 9.5, FAINT, 700, track=1.6))
-        a(txt(mx + mw - 16, y, v, 11.5, BODY, 500, anchor="end"))
+        y = META_Y + 56 + i * 22
+        a(txt(META_X + 16, y, k, 10, FAINT, 700, track=1.6))
+        a(txt(META_X + META_W - 16, y, v, 11.5, BODY, 500, anchor="end"))
 
     # ---------- pillar cards ----------
     # Three cards because the product genuinely has three claims and a paragraph
@@ -194,62 +262,137 @@ def render():
         ("03", "RUNTIME FREE", CYAN,
          "Designs built for plain code, LangGraph,", "or any framework you choose."),
     )
-    hdr = CARD_Y + 30
     for i, (num, label, accent, l1, l2) in enumerate(pillars):
-        x = M + i * (CARD_W + 22)
+        x = M + i * (CARD_W + CARD_GAP)
         a(panel(x, CARD_Y, CARD_W, CARD_H))
         # accent keyline down the leading edge, so the card reads as tabbed
         a(f'<rect x="{x}" y="{CARD_Y}" width="3" height="{CARD_H}" rx="1.5" fill="{accent}"/>')
-        a(txt(x + 22, hdr, num, 10.5, accent, 700, MONO, track=1.2))
-        a(txt(x + 46, hdr, label, 12, accent, 700, track=2.2))
-        a(txt(x + 22, hdr + 14 + LEAD + 8, l1, 14, BODY, 600))
-        a(txt(x + 22, hdr + 14 + LEAD + 30, l2, 14, MICRO, 400))
+        a(txt(x + CARD_PAD_X, PILLAR_HDR, num, 10.5, accent, 700, MONO, track=1.2))
+        a(txt(x + CARD_PAD_X + 24, PILLAR_HDR, label, 12, accent, 700, track=2.2))
+        a(txt(x + CARD_PAD_X, PILLAR_L1, l1, 14, BODY, 600))
+        a(txt(x + CARD_PAD_X, PILLAR_L2, l2, 14, MICRO, 400))
 
     # ---------- terminal window ----------
-    tw = W - 2 * M
-    a(panel(M, TERM_Y, tw, TERM_H, rx=9))
-    a(f'<path d="M{M} {TERM_Y+9} a9,9 0 0 1 9,-9 h{tw-18} a9,9 0 0 1 9,9 v27 h-{tw} z" '
-      f'fill="#0b1324" stroke="{BORDER}" stroke-width="1"/>')
+    a(panel(M, TERM_Y, TERM_W, TERM_H, rx=9))
+    a(f'<path d="M{M} {TERM_Y+9} a9,9 0 0 1 9,-9 h{TERM_W-18} a9,9 0 0 1 9,9 '
+      f'v{TERM_BAR-9} h-{TERM_W} z" fill="#0b1324" stroke="{BORDER}" stroke-width="1"/>')
     for j, c in enumerate(("#ff5f57", "#febc2e", "#28c840")):
         a(f'<circle cx="{M + 22 + j*17}" cy="{TERM_Y + 18}" r="5.5" fill="{c}"/>')
-    a(txt(M + tw / 2, TERM_Y + 23, "orchestration-design — the evidence", 10.5, FAINT,
+    a(txt(M + TERM_W / 2, TERM_Y + 23, "orchestration-design — the evidence", 10.5, FAINT,
           500, MONO, anchor="middle"))
-    a(f'<line x1="{M}" y1="{TERM_Y+36}" x2="{M+tw}" y2="{TERM_Y+36}" stroke="{BORDER}"/>')
+    a(f'<line x1="{M}" y1="{TERM_Y+TERM_BAR}" x2="{M+TERM_W}" y2="{TERM_Y+TERM_BAR}" '
+      f'stroke="{BORDER}"/>')
 
     # left: the numbers, small on purpose — they answer the second question
-    a(txt(M + 26, TERM_Y + 66, "BACKED BY 2026 AI RESEARCH", 10, FAINT, 700, track=2.2))
-    ev = ((0,   "90.2%", AMBER, "quoted multi-agent win"),
-          (236, "15×",   AMBER, "tokens it actually cost"),
-          (408, "80%",   CYAN,  "of variance = spend, not architecture"))
-    for dx, big, colour, note in ev:
-        a(f'<text x="{M + 26 + dx}" y="{TERM_Y + 66 + 14 + LEAD + 16}" font-family="{MONO}" '
+    a(txt(TERM_L, EV_HDR, "BACKED BY 2026 AI RESEARCH", 10, FAINT, 700, track=2.2))
+    ev = (("90.2%", AMBER, "quoted multi-agent win"),
+          ("15×",   AMBER, "tokens it actually cost"),
+          ("80%",   CYAN,  "of variance = spend, not architecture"))
+    for i, (big, colour, note) in enumerate(ev):
+        a(f'<text x="{TERM_L + i * EV_PITCH}" y="{EV_BASE}" font-family="{MONO}" '
           f'font-size="24" font-weight="700" fill="{colour}">{big}'
           f'<tspan font-family="{FONT}" font-size="10" font-weight="500" fill="{MICRO}" '
           f'dx="8">{esc(note)}</tspan></text>')
-    a(txt(M + 26, TERM_Y + 134, "Two follow-ups held compute constant: at matched budgets a "
-                                "single agent matched or beat every multi-agent variant.",
-          11, MICRO))
 
     # right: the command
-    bw, bh = 320, 42
-    bx, by = M + tw - 26 - bw, TERM_Y + 74
-    a(panel(bx, by, bw, bh, fill="#0b1324", stroke=CYAN, rx=6))
-    a(txt(bx + 16, by + 27, "$", 13, GREEN, 700, MONO))
-    a(txt(bx + 32, by + 27, "./build.sh", 13, INK, 600, MONO))
-    a(f'<rect x="{bx+126}" y="{by+15}" width="8" height="15" fill="{GREEN}" opacity="0.85"/>')
-    a(txt(bx + bw - 16, by + 27, "installs in seconds", 10, MICRO, 400, MONO, anchor="end"))
-    a(txt(bx + bw - 16, by + bh + 22, "zero lock-in · markdown only · no dependencies", 10,
-          FAINT, 400, MONO, anchor="end"))
+    a(panel(BOX_X, BOX_Y, BOX_W, BOX_H, fill="#0b1324", stroke=CYAN, rx=6))
+    a(txt(BOX_X + 16, BOX_BASE, "$", 13, GREEN, 700, MONO))
+    a(txt(BOX_X + 32, BOX_BASE, "./build.sh", 13, INK, 600, MONO))
+    a(f'<rect x="{BOX_X+126}" y="{BOX_BASE-12}" width="8" height="15" fill="{GREEN}" '
+      f'opacity="0.85"/>')
+    a(txt(BOX_X + BOX_W - 16, BOX_BASE, "installs in seconds", 10, MICRO, 400, MONO,
+          anchor="end"))
+
+    # the footer row — one baseline across both columns
+    a(txt(TERM_L, FOOT_BASE, "Two follow-ups held compute constant: at matched budgets a "
+                             "single agent matched or beat every multi-agent variant.",
+          11, MICRO))
+    a(txt(TERM_R, FOOT_BASE, "zero lock-in · markdown only · no dependencies", 10, FAINT,
+          400, MONO, anchor="end"))
 
     a("</svg>")
     return "\n".join(o)
+
+
+def _selftest() -> int:
+    """Assert the alignments, because eyeballing them has failed three times.
+
+    Only relationships that are pure geometry are asserted here. Text *widths*
+    depend on the renderer's font metrics and cannot be checked without one — a
+    copy change still needs measuring in a browser.
+    """
+    y_of = ladder_rungs()
+
+    # 1. page margins agree top and bottom
+    assert CHROME_BASE - INK_ASC[10] == MARGIN_Y, CHROME_BASE
+    assert H - (TERM_Y + TERM_H) == MARGIN_Y, H - (TERM_Y + TERM_H)
+
+    # 2. everything that touches the left margin actually touches it
+    assert LADDER_X0 - NODE_R == M, LADDER_X0            # the glow node, not the rail
+    assert TERM_L - TERM_PAD == M, TERM_L
+
+    # 3. and the right margin
+    assert META_X + META_W == W - M
+    assert M + 2 * (CARD_W + CARD_GAP) + CARD_W == W - M, CARD_W
+    assert M + TERM_W == W - M
+    assert BOX_X + BOX_W == TERM_R
+
+    # 4. ladder, metadata card and the title block share one midline
+    ladder_mid = ((y_of[6] - LADDER_OV) + (y_of[1] + LADDER_OV)) / 2
+    assert ladder_mid == HERO_MID, ladder_mid
+    assert META_Y + META_H / 2 == HERO_MID, META_Y
+    assert (HERO_TOP + HERO_BOT) / 2 == HERO_MID
+
+    # 5. pillar copy is optically centred in its card — ink edges, not baselines
+    top_pad = (PILLAR_HDR - INK_ASC[12]) - CARD_Y
+    bot_pad = (CARD_Y + CARD_H) - (PILLAR_L2 + INK_DESC[14])
+    assert abs(top_pad - bot_pad) <= 2, (top_pad, bot_pad)
+
+    # 6. the terminal's two columns share the footer baseline. They were 4px
+    #    apart — visible, and impossible to justify. Assert against the emitted
+    #    SVG, not the constant: a constant only proves what it is set to, and
+    #    the bug was one column not using it.
+    import re
+    foot = re.findall(rf'<text x="([\d.]+)" y="{FOOT_BASE}"', render())
+    assert len(foot) == 2, f"expected 2 text nodes on the footer baseline, got {len(foot)}"
+
+    # 7. the stat row is a grid: uniform pitch, cells wide enough for their own
+    #    content, and the last one clears the command box
+    xs = [TERM_L + i * EV_PITCH for i in range(3)]
+    assert len(set(round(b - a) for a, b in zip(xs, xs[1:]))) == 1, xs
+    assert EV_PITCH >= EV_MAX_W + EV_GUTTER, EV_PITCH    # uniform but too tight = collision
+    assert xs[-1] + EV_MAX_W < BOX_X, (xs[-1], BOX_X)
+
+    # 8. the command box is centred on the stat row's ink
+    stat_mid = (EV_BASE - INK_ASC[24] + EV_BASE + INK_DESC[24]) / 2
+    assert abs((BOX_Y + BOX_H / 2) - stat_mid) <= 3, (BOX_Y, stat_mid)
+
+    # 9. bands do not collide
+    assert y_of[1] + LADDER_OV < CARD_Y, "ladder runs into the pillar row"
+    assert META_Y + META_H < CARD_Y, "metadata card runs into the pillar row"
+    assert CARD_Y + CARD_H < TERM_Y, "pillar row runs into the terminal"
+    assert BOX_Y + BOX_H < FOOT_BASE - INK_ASC[11], "command box runs into the footer"
+
+    # 10. it renders, and it renders the same way twice
+    svg = render()
+    assert svg == render()
+    assert svg.startswith("<svg") and svg.rstrip().endswith("</svg>")
+    import xml.dom.minidom
+    xml.dom.minidom.parseString(svg)
+
+    print("  OK: margins, midlines, baselines, pitch and band clearances all hold.")
+    return 0
 
 
 def main():
     import argparse
     ap = argparse.ArgumentParser(description="Generate the README banner.")
     ap.add_argument("--out", default=None, help="write here instead of docs/img/banner.svg")
+    ap.add_argument("--selftest", action="store_true", help="assert the layout, write nothing")
     args = ap.parse_args()
+
+    if args.selftest:
+        raise SystemExit(_selftest())
 
     OUT.mkdir(parents=True, exist_ok=True)
     p = Path(args.out) if args.out else OUT / "banner.svg"

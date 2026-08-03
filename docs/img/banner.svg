@@ -1,65 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="610" viewBox="0 0 1400 610" role="img" aria-label="orchestration-design, a skill for Claude Code and Hermes. Stop paying multi-agent prices for single-agent quality. The gatekeeper: decides exactly how much orchestration your pipeline actually needs. The emergency brake: tactical micro-skills to snap agents out of endless execution loops. Runtime free: designs built for plain code, LangGraph, or any framework you choose. Backed by 2026 AI research — a quoted 90.2 percent multi-agent win cost 15 times the tokens, and 80 percent of the variance was spend rather than architecture. Built by Sachin Sharma, AI systems engineering, MIT licence. Installs in seconds with build.sh.">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="608" viewBox="0 0 1400 608" role="img" aria-label="orchestration-design, a skill for Claude Code and Hermes. Stop paying multi-agent prices for single-agent quality. The gatekeeper: decides exactly how much orchestration your pipeline actually needs. The emergency brake: tactical micro-skills to snap agents out of endless execution loops. Runtime free: designs built for plain code, LangGraph, or any framework you choose. Backed by 2026 AI research — a quoted 90.2 percent multi-agent win cost 15 times the tokens, and 80 percent of the variance was spend rather than architecture. Built by Sachin Sharma, AI systems engineering, MIT licence. Installs in seconds with build.sh.">
 <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0b1120"/><stop offset="100%" stop-color="#131c31"/></linearGradient><linearGradient id="wash" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00f0ff" stop-opacity="0.10"/><stop offset="55%" stop-color="#00f0ff" stop-opacity="0"/></linearGradient><linearGradient id="rule" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00f0ff" stop-opacity="0.6"/><stop offset="100%" stop-color="#00f0ff" stop-opacity="0"/></linearGradient><filter id="glow" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<rect width="1400" height="610" fill="url(#bg)"/>
-<rect width="1400" height="610" fill="url(#wash)"/>
-<text x="60" y="40" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10.5" font-weight="600" fill="#64748b" letter-spacing="2.4">ORCHESTRATION-DESIGN / MAIN / CLAUDE CODE + HERMES</text>
-<text x="1340" y="40" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.5" font-weight="500" fill="#64748b">github.com/elementalsouls/orchestration-design</text>
+<rect width="1400" height="608" fill="url(#bg)"/>
+<rect width="1400" height="608" fill="url(#wash)"/>
+<text x="60" y="40" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="600" fill="#64748b" letter-spacing="2.4">ORCHESTRATION-DESIGN / MAIN / CLAUDE CODE + HERMES</text>
+<text x="1340" y="40" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="500" fill="#64748b">github.com/elementalsouls/orchestration-design</text>
 <line x1="60" y1="58" x2="1340" y2="58" stroke="#1e293b" stroke-width="1"/>
-<line x1="76" y1="109" x2="76" y2="263" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
-<line x1="146" y1="109" x2="146" y2="263" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
-<line x1="76" y1="246" x2="146" y2="246" stroke="#64748b" stroke-width="2.5" opacity="0.62" stroke-linecap="round"/>
-<circle cx="76" cy="246" r="4" fill="#64748b" opacity="0.77"/>
-<circle cx="146" cy="246" r="4" fill="#64748b" opacity="0.77"/>
-<line x1="76" y1="222" x2="146" y2="222" stroke="#64748b" stroke-width="2.5" opacity="0.62" stroke-linecap="round"/>
-<circle cx="76" cy="222" r="4" fill="#64748b" opacity="0.77"/>
-<circle cx="146" cy="222" r="4" fill="#64748b" opacity="0.77"/>
-<line x1="76" y1="174" x2="146" y2="174" stroke="#64748b" stroke-width="2.5" opacity="0.3" stroke-linecap="round"/>
-<circle cx="76" cy="174" r="4" fill="#64748b" opacity="0.44999999999999996"/>
-<circle cx="146" cy="174" r="4" fill="#64748b" opacity="0.44999999999999996"/>
-<line x1="76" y1="150" x2="146" y2="150" stroke="#64748b" stroke-width="2.5" opacity="0.3" stroke-linecap="round"/>
-<circle cx="76" cy="150" r="4" fill="#64748b" opacity="0.44999999999999996"/>
-<circle cx="146" cy="150" r="4" fill="#64748b" opacity="0.44999999999999996"/>
-<line x1="76" y1="126" x2="146" y2="126" stroke="#64748b" stroke-width="2.5" opacity="0.3" stroke-linecap="round"/>
-<circle cx="76" cy="126" r="4" fill="#64748b" opacity="0.44999999999999996"/>
-<circle cx="146" cy="126" r="4" fill="#64748b" opacity="0.44999999999999996"/>
-<line x1="76" y1="198" x2="146" y2="198" stroke="#00f0ff" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/>
-<circle cx="76" cy="198" r="7.5" fill="#00f0ff" filter="url(#glow)"/>
-<circle cx="76" cy="198" r="3" fill="#0b1120"/>
-<circle cx="146" cy="198" r="7.5" fill="#00f0ff" filter="url(#glow)"/>
-<circle cx="146" cy="198" r="3" fill="#0b1120"/>
-<text x="162" y="203" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" font-weight="700" fill="#00f0ff">3</text>
+<line x1="67.5" y1="127.0" x2="67.5" y2="265.0" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+<line x1="137.5" y1="127.0" x2="137.5" y2="265.0" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+<line x1="67.5" y1="251.0" x2="137.5" y2="251.0" stroke="#64748b" stroke-width="2.5" opacity="0.62" stroke-linecap="round"/>
+<circle cx="67.5" cy="251.0" r="4" fill="#64748b" opacity="0.77"/>
+<circle cx="137.5" cy="251.0" r="4" fill="#64748b" opacity="0.77"/>
+<line x1="67.5" y1="229.0" x2="137.5" y2="229.0" stroke="#64748b" stroke-width="2.5" opacity="0.62" stroke-linecap="round"/>
+<circle cx="67.5" cy="229.0" r="4" fill="#64748b" opacity="0.77"/>
+<circle cx="137.5" cy="229.0" r="4" fill="#64748b" opacity="0.77"/>
+<line x1="67.5" y1="185.0" x2="137.5" y2="185.0" stroke="#64748b" stroke-width="2.5" opacity="0.3" stroke-linecap="round"/>
+<circle cx="67.5" cy="185.0" r="4" fill="#64748b" opacity="0.44999999999999996"/>
+<circle cx="137.5" cy="185.0" r="4" fill="#64748b" opacity="0.44999999999999996"/>
+<line x1="67.5" y1="163.0" x2="137.5" y2="163.0" stroke="#64748b" stroke-width="2.5" opacity="0.3" stroke-linecap="round"/>
+<circle cx="67.5" cy="163.0" r="4" fill="#64748b" opacity="0.44999999999999996"/>
+<circle cx="137.5" cy="163.0" r="4" fill="#64748b" opacity="0.44999999999999996"/>
+<line x1="67.5" y1="141.0" x2="137.5" y2="141.0" stroke="#64748b" stroke-width="2.5" opacity="0.3" stroke-linecap="round"/>
+<circle cx="67.5" cy="141.0" r="4" fill="#64748b" opacity="0.44999999999999996"/>
+<circle cx="137.5" cy="141.0" r="4" fill="#64748b" opacity="0.44999999999999996"/>
+<line x1="67.5" y1="207.0" x2="137.5" y2="207.0" stroke="#00f0ff" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/>
+<circle cx="67.5" cy="207.0" r="7.5" fill="#00f0ff" filter="url(#glow)"/>
+<circle cx="67.5" cy="207.0" r="3" fill="#0b1120"/>
+<circle cx="137.5" cy="207.0" r="7.5" fill="#00f0ff" filter="url(#glow)"/>
+<circle cx="137.5" cy="207.0" r="3" fill="#0b1120"/>
+<text x="153.5" y="212.0" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" font-weight="700" fill="#00f0ff">3</text>
 <text x="192" y="176" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="58" font-weight="700" letter-spacing="-2" fill="#f1f5f9">orchestration<tspan fill="#64748b" font-weight="300"> / </tspan><tspan fill="#00f0ff">design</tspan></text>
 <line x1="192" y1="196" x2="980" y2="196" stroke="url(#rule)" stroke-width="2.5"/>
 <text x="192" y="232" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="26" font-weight="700" fill="#f1f5f9">Stop paying multi-agent prices</text>
 <text x="192" y="264" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="26" font-weight="700" fill="#00f0ff">for single-agent quality.</text>
-<rect x="1040" y="122" width="300" height="118" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
-<circle cx="1060" cy="146" r="3.5" fill="#00f0ff" filter="url(#glow)"/>
-<text x="1072" y="150" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="700" fill="#3fbdca" letter-spacing="2">ENGINE METADATA</text>
-<line x1="1056" y1="162" x2="1324" y2="162" stroke="#1e293b"/>
-<text x="1056" y="184" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#64748b" letter-spacing="1.6">AUTHOR</text>
-<text x="1324" y="184" text-anchor="end" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#e2e8f0">Sachin Sharma</text>
-<text x="1056" y="206" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#64748b" letter-spacing="1.6">ROLE</text>
-<text x="1324" y="206" text-anchor="end" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#e2e8f0">AI Systems Engineering</text>
-<text x="1056" y="228" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="9.5" font-weight="700" fill="#64748b" letter-spacing="1.6">LICENSE</text>
-<text x="1324" y="228" text-anchor="end" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#e2e8f0">MIT</text>
+<rect x="1040" y="137" width="300" height="118" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+<circle cx="1060" cy="161" r="3.5" fill="#00f0ff" filter="url(#glow)"/>
+<text x="1072" y="165" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="700" fill="#3fbdca" letter-spacing="2">ENGINE METADATA</text>
+<line x1="1056" y1="177" x2="1324" y2="177" stroke="#1e293b"/>
+<text x="1056" y="193" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1.6">AUTHOR</text>
+<text x="1324" y="193" text-anchor="end" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#e2e8f0">Sachin Sharma</text>
+<text x="1056" y="215" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1.6">ROLE</text>
+<text x="1324" y="215" text-anchor="end" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#e2e8f0">AI Systems Engineering</text>
+<text x="1056" y="237" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1.6">LICENSE</text>
+<text x="1324" y="237" text-anchor="end" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#e2e8f0">MIT</text>
 <rect x="60" y="278" width="412" height="112" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
 <rect x="60" y="278" width="3" height="112" rx="1.5" fill="#00f0ff"/>
-<text x="82" y="308" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.5" font-weight="700" fill="#00f0ff" letter-spacing="1.2">01</text>
-<text x="106" y="308" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#00f0ff" letter-spacing="2.2">THE GATEKEEPER</text>
-<text x="82" y="338" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="600" fill="#e2e8f0">Decides exactly how much orchestration</text>
-<text x="82" y="360" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="400" fill="#94a3b8">your pipeline actually needs.</text>
+<text x="82" y="312" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.5" font-weight="700" fill="#00f0ff" letter-spacing="1.2">01</text>
+<text x="106" y="312" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#00f0ff" letter-spacing="2.2">THE GATEKEEPER</text>
+<text x="82" y="342" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="600" fill="#e2e8f0">Decides exactly how much orchestration</text>
+<text x="82" y="364" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="400" fill="#94a3b8">your pipeline actually needs.</text>
 <rect x="494" y="278" width="412" height="112" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
 <rect x="494" y="278" width="3" height="112" rx="1.5" fill="#ff9f1c"/>
-<text x="516" y="308" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.5" font-weight="700" fill="#ff9f1c" letter-spacing="1.2">02</text>
-<text x="540" y="308" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#ff9f1c" letter-spacing="2.2">THE EMERGENCY BRAKE</text>
-<text x="516" y="338" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="600" fill="#e2e8f0">Tactical micro-skills to snap agents out</text>
-<text x="516" y="360" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="400" fill="#94a3b8">of endless execution loops.</text>
+<text x="516" y="312" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.5" font-weight="700" fill="#ff9f1c" letter-spacing="1.2">02</text>
+<text x="540" y="312" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#ff9f1c" letter-spacing="2.2">THE EMERGENCY BRAKE</text>
+<text x="516" y="342" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="600" fill="#e2e8f0">Tactical micro-skills to snap agents out</text>
+<text x="516" y="364" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="400" fill="#94a3b8">of endless execution loops.</text>
 <rect x="928" y="278" width="412" height="112" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
 <rect x="928" y="278" width="3" height="112" rx="1.5" fill="#00f0ff"/>
-<text x="950" y="308" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.5" font-weight="700" fill="#00f0ff" letter-spacing="1.2">03</text>
-<text x="974" y="308" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#00f0ff" letter-spacing="2.2">RUNTIME FREE</text>
-<text x="950" y="338" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="600" fill="#e2e8f0">Designs built for plain code, LangGraph,</text>
-<text x="950" y="360" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="400" fill="#94a3b8">or any framework you choose.</text>
+<text x="950" y="312" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.5" font-weight="700" fill="#00f0ff" letter-spacing="1.2">03</text>
+<text x="974" y="312" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="12" font-weight="700" fill="#00f0ff" letter-spacing="2.2">RUNTIME FREE</text>
+<text x="950" y="342" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="600" fill="#e2e8f0">Designs built for plain code, LangGraph,</text>
+<text x="950" y="364" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="400" fill="#94a3b8">or any framework you choose.</text>
 <rect x="60" y="412" width="1280" height="166" rx="9" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
 <path d="M60 421 a9,9 0 0 1 9,-9 h1262 a9,9 0 0 1 9,9 v27 h-1280 z" fill="#0b1324" stroke="#1e293b" stroke-width="1"/>
 <circle cx="82" cy="430" r="5.5" fill="#ff5f57"/>
@@ -67,15 +67,15 @@
 <circle cx="116" cy="430" r="5.5" fill="#28c840"/>
 <text x="700.0" y="435" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.5" font-weight="500" fill="#64748b">orchestration-design — the evidence</text>
 <line x1="60" y1="448" x2="1340" y2="448" stroke="#1e293b"/>
-<text x="86" y="478" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="2.2">BACKED BY 2026 AI RESEARCH</text>
-<text x="86" y="516" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#ff9f1c">90.2%<tspan font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="500" fill="#94a3b8" dx="8">quoted multi-agent win</tspan></text>
-<text x="322" y="516" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#ff9f1c">15×<tspan font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="500" fill="#94a3b8" dx="8">tokens it actually cost</tspan></text>
-<text x="494" y="516" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#00f0ff">80%<tspan font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="500" fill="#94a3b8" dx="8">of variance = spend, not architecture</tspan></text>
-<text x="86" y="546" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#94a3b8">Two follow-ups held compute constant: at matched budgets a single agent matched or beat every multi-agent variant.</text>
-<rect x="994" y="486" width="320" height="42" rx="6" fill="#0b1324" stroke="#00f0ff" stroke-width="1"/>
-<text x="1010" y="513" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" font-weight="700" fill="#4ade80">$</text>
-<text x="1026" y="513" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" font-weight="600" fill="#f1f5f9">./build.sh</text>
-<rect x="1120" y="501" width="8" height="15" fill="#4ade80" opacity="0.85"/>
-<text x="1298" y="513" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="400" fill="#94a3b8">installs in seconds</text>
-<text x="1298" y="550" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="400" fill="#64748b">zero lock-in · markdown only · no dependencies</text>
+<text x="86" y="472" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="2.2">BACKED BY 2026 AI RESEARCH</text>
+<text x="86" y="504" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#ff9f1c">90.2%<tspan font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="500" fill="#94a3b8" dx="8">quoted multi-agent win</tspan></text>
+<text x="376" y="504" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#ff9f1c">15×<tspan font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="500" fill="#94a3b8" dx="8">tokens it actually cost</tspan></text>
+<text x="666" y="504" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#00f0ff">80%<tspan font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="10" font-weight="500" fill="#94a3b8" dx="8">of variance = spend, not architecture</tspan></text>
+<rect x="994" y="474" width="320" height="44" rx="6" fill="#0b1324" stroke="#00f0ff" stroke-width="1"/>
+<text x="1010" y="500" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" font-weight="700" fill="#4ade80">$</text>
+<text x="1026" y="500" text-anchor="start" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" font-weight="600" fill="#f1f5f9">./build.sh</text>
+<rect x="1120" y="488" width="8" height="15" fill="#4ade80" opacity="0.85"/>
+<text x="1298" y="500" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="400" fill="#94a3b8">installs in seconds</text>
+<text x="86" y="550" text-anchor="start" font-family="ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif" font-size="11" font-weight="400" fill="#94a3b8">Two follow-ups held compute constant: at matched budgets a single agent matched or beat every multi-agent variant.</text>
+<text x="1314" y="550" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="400" fill="#64748b">zero lock-in · markdown only · no dependencies</text>
 </svg>
