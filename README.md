@@ -2,6 +2,12 @@
 
 # orchestration-design
 
+[![checks](https://github.com/elementalsouls/orchestration-design/actions/workflows/checks.yml/badge.svg)](https://github.com/elementalsouls/orchestration-design/actions/workflows/checks.yml)
+[![licence: MIT](https://img.shields.io/badge/licence-MIT-2C6A4A)](LICENSE)
+[![skill: markdown only](https://img.shields.io/badge/skill-markdown%20only-0D6A73)](skill/orchestration-design/SKILL.md)
+[![dependencies: none](https://img.shields.io/badge/dependencies-none-0D6A73)](#install)
+[![evidence: 8 sources, dated](https://img.shields.io/badge/evidence-8%20sources%2C%20dated-8A5E06)](skill/orchestration-design/references/evidence.md)
+
 > A Claude Code skill that decides **how much orchestration your work actually needs** — and usually concludes it's less than you think. The skill is 12 markdown files with no runtime and no dependencies. The repo around it is five runnable implementations and a ten-check suite that proves them.
 
 Built by **[Sachin Sharma](https://www.linkedin.com/in/sachinsharma8080/)** — Bug Hunting & GenAI Security Research.
@@ -127,6 +133,24 @@ Six levels, simplest first. Start at 1. **Stop at the first level that holds.** 
 **Landing on level 1 or 2 is a successful use of this skill**, and the most common correct outcome.
 
 **Landing on level 5 or 6 is equally successful** — it is just rarer. When the trigger is literally true, the skill does not talk you out of it: it designs the fan-out, puts an append reducer on every field the branches write, asserts `len(results) == len(items) - len(errors)` so silent loss can't hide, and hands you a runnable implementation on your framework. The gate exists to make the climb *earned*, not to cap you at level 3.
+
+---
+
+## When you're already building, and stuck
+
+The ladder decides *what to build*. It does nothing for the other failure: the design is right, the level is right, and execution is going in circles anyway. Re-architecting does not fix that — **a new topology cannot repair a wrong premise**, and climbing a level to escape a loop just spreads the same guessing across more nodes and more spend.
+
+So there is a second layer. `modules/` holds self-contained protocols you invoke *instead of* designing, and a user who arrives already stuck skips phases 0–2 entirely.
+
+| Module | Fires | What it forces |
+|---|---|---|
+| **`context-auditor`** | **Before** a loop | Every count, path, version and name in an always-loaded file is a claim the world can invalidate — and from the inside, a stale fact and a true fact look identical. Verifies them, and scopes or cuts rules whose reason nobody can state. |
+| **`rubber-duck-verifier`** | **During** one | Stop writing code. Text-only tear-down — goal, the failure quoted exactly, what each attempt *disproved*, and what you still don't know — before any further edit. |
+| **`adversarial-reviewer`** | **After** work exists | Reviews from a separate clean context, given the artifact and the requirement but never the reasoning that produced it. Its job is to break the code, and a verdict of "looks good" without saying what was tried is not a review. |
+
+**The order is the point.** `context-auditor` prevents loops by removing the wrong premises that cause them; `rubber-duck-verifier` breaks one already running; `adversarial-reviewer` catches what survives. Reaching for the third when the first was skipped is the common expensive mistake — **a reviewer cannot see a premise that is wrong in both the code and the review.**
+
+Entry conditions are observations, not feelings: the same file edited three times with the error unchanged, a test failing the same way twice, or choosing the next fix because the last one failed. One is enough. Routing lives in [`references/tactical-interventions.md`](skill/orchestration-design/references/tactical-interventions.md).
 
 ---
 
@@ -322,7 +346,7 @@ Two of the seven rules can't be automated and the standard says so: evidence dis
 
 ## Contributing
 
-**The most useful thing you can send is a counterexample.** This skill makes a falsifiable claim — that a named trigger, and only a named trigger, justifies each climb. If you have work where the ladder gave the wrong answer, that is worth more than a typo fix. Open an issue with the task, the level it picked, and what actually turned out to be right.
+**The most useful thing you can send is a counterexample.** This skill makes a falsifiable claim — that a named trigger, and only a named trigger, justifies each climb. If you have work where the ladder gave the wrong answer, that is worth more than a typo fix. Open a [counterexample issue](.github/ISSUE_TEMPLATE/counterexample.md) with the task, the level it picked, and what actually turned out to be right. **Being wrong yourself still counts** — "it said level 1, I built level 3, and level 1 would have been fine" tells us a trigger reads weaker than it is, and nobody files that one unless invited to.
 
 Also welcome: a run that found a defect the way the cold runs did, a target file for a runtime that isn't covered, or a source that moves one of the claims in `evidence.md`.
 
