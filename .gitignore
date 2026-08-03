@@ -3,3 +3,14 @@ __pycache__/
 *.pyc
 .venv/
 runs/
+
+# credentials and local config — nothing here should ever be committed
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.keystore
+credentials.json
+secrets.*
+.claude/settings.local.json
