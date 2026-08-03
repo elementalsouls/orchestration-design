@@ -1,5 +1,5 @@
 ---
-name: rubber-duck
+name: rubber-duck-verifier
 description: Break an execution loop by explaining the failure in text before touching code again. Use when stuck in a loop, guessing, or repeatedly failing tests — when the same file has been edited three or more times without the error changing, when fixes are being tried in sequence rather than chosen, when a test has failed the same way twice, or when a build or pipeline step keeps failing and each attempt is a variation of the last. Also use before a fourth attempt at anything, and when about to add a workaround for a cause that has not been identified.
 ---
 

@@ -28,9 +28,16 @@ cost of stopping late is the rest of the budget.
 Each is a self-contained protocol under `modules/`. Read the one that matches and follow it
 literally — they are written to be executed, not skimmed.
 
-| Module | Use when |
-|---|---|
-| `modules/rubber-duck/SKILL.md` | Stuck in a loop, guessing, or repeatedly failing tests. Forces a text-only tear-down — goal, failure, failed assumptions, missing context — before any further edit |
+| Module | Fires | Use when |
+|---|---|---|
+| `modules/context-auditor/SKILL.md` | **Before** a loop starts | The premises are suspect. Verifies every count, path, version and name in the always-loaded files, and scopes or cuts rules whose reason nobody can state. Run it before a long build, after a refactor or rename, and whenever an agent keeps making the same wrong assumption |
+| `modules/rubber-duck-verifier/SKILL.md` | **During** a loop | Stuck, guessing, or repeatedly failing tests. Forces a text-only tear-down — goal, failure, failed assumptions, missing context — before any further edit |
+| `modules/adversarial-reviewer/SKILL.md` | **After** work exists | A reviewer keeps passing work that then fails, or the change touches money, auth or deletion. Reviews from a separate clean context and tries to break the code rather than confirm it |
+
+The order is not decorative. `context-auditor` prevents loops by removing the wrong premises
+that cause them; `rubber-duck-verifier` breaks one already running; `adversarial-reviewer`
+catches what survives. Reaching for the third when the first was skipped is common and
+expensive — a reviewer cannot see a premise that is wrong in both the code and the review.
 
 ## Where this sits in the method
 

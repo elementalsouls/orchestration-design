@@ -25,6 +25,9 @@ A toolkit that helps builders decide how much orchestration a piece of work need
   - `references/anti-patterns.md` — symptom → diagnosis → fix
   - `references/auditing-an-existing-graph.md` — Track B workflow
   - `references/targets/` — one file per substrate: `procedural.md` (output is a process, not software), `plain-code.md`, `langgraph-python.md`, `langgraph-js.md`, `claude-code-subagents.md`, `durable-workflow.md`
+  - **Two layers, and the distinction is load-bearing.** `references/` is the **architectural layer** — read during phases 0–4 to decide what to build. `modules/` is the **tactical layer** — read when execution is already stuck, and phases 0–2 are skipped entirely. A wrong premise is not fixed by a new architecture, so routing a stuck user into design work wastes the turn they needed.
+  - `modules/` — one self-contained protocol per subfolder, each a standard `SKILL.md`. `context-auditor` fires *before* a loop (verifies stale facts, scopes overconstraints); `rubber-duck-verifier` fires *during* one (text-only tear-down before any further edit); `adversarial-reviewer` fires *after* work exists (separate clean context, tries to break the code). Roster and routing in `references/tactical-interventions.md`.
+  - Note: nested `modules/*/SKILL.md` files are **not** independently discoverable by Claude Code — user skills are flat, one `SKILL.md` per top-level directory. They ship in the bundle and the parent skill routes to them by path; they do not auto-trigger on their own `description`.
 - `reference-implementation/` — one runnable example per pattern, `01-loop-not-graph` through `05-judge-panel`, plus `verify_topology.py`.
 - `tools/` — `gen_banner.py` (README banner), `mermaid_link.py` (diagram → pre-filled edit URL), `term_svg.py` (terminal capture → SVG). All generated images regenerate; never hand-edit `docs/img/`.
 
