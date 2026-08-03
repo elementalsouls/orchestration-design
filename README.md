@@ -187,9 +187,11 @@ The pattern across all three: **none would have surfaced from re-reading the des
 
 ## How it was tested — by agents that had never seen it
 
-The author cannot evaluate a document he wrote from memory. So two of the six end-to-end runs were **cold-context**: a fresh agent given only the user's request and the installed skill file, with no knowledge of this project, no access to the repo, and no idea what answer was wanted.
+The author cannot evaluate a document he wrote from memory. So half the runs were **cold-context**: a fresh agent given only the user's request and the installed skill file, with no knowledge of this project, no access to the repo, and no idea what answer was wanted.
 
-Those two runs are the useful evidence. The other four are the author's, and they matter for a different reason — the ladder *discriminated* rather than giving one answer every time:
+**Eight end-to-end runs on the skill — four by the author, four cold** — plus a ninth cold run against the [skill-design standard](docs/skill-design-standard.md) itself, which had a fresh agent author a new skill from that document alone.
+
+The cold runs are the useful evidence. The author's four matter for a different reason — the ladder *discriminated* rather than giving one answer every time:
 
 | Task | Level | Outcome |
 |---|---|---|
@@ -198,9 +200,16 @@ Those two runs are the useful evidence. The other four are the author's, and the
 | Replace six manual test commands | 1 · plain script | Gate refused again. Found 4 of the 6 documented commands were silently unrunnable |
 | Triage support tickets | 3 · loop + reviewer | Reviewer caught a cross-account data leak filed P2 instead of P0 |
 
-Between them the six runs found **thirteen defects in the skill itself**, every one from *using* it rather than reading it. The cold runs alone caught six: file references to things the bundle doesn't ship, a design smell that fired on correct designs, a verification phase that assumed a reviewer which levels 1–2 don't have, a spend budget that assumed tokens where nothing costs tokens, an ambiguity about whether Phase 0 asks or assumes, and no prompt anywhere about legal or ethical bounds for a tool that touches third-party data.
+Every defect below came from *using* the skill, not reading it. Traceable to a commit each:
 
-A later cold run found the worst one. Given a request in *process* vocabulary — a compliance audit, no code — the skill **did not fire at all**: zero invocations, because every trigger in its description was written in software nouns. The fix was to the description, not the method, and the identical request afterwards fired it on the first turn.
+| Found by | Defects | Examples |
+|---|---|---|
+| Cold runs 1–2 | **7** | File references to things the bundle doesn't ship · a design smell that fired on correct designs · a verification phase assuming a reviewer levels 1–2 don't have · a spend budget assuming tokens where nothing costs tokens · whether Phase 0 asks or assumes |
+| Cold runs 3–4 | **1**, the worst | Given a *process* request — a compliance audit, no code — the skill **did not fire at all**. Zero invocations, because every trigger was a software noun. The fix was to the description, not the method; the identical request afterwards fired on the first turn |
+| Auditing against those runs | **9** | Self-inconsistencies — the repo breaking its own stated conventions |
+| Cold run 5, against the standard | **8** | A fresh agent authored a skill from `skill-design-standard.md` alone. It passed — and returned eight defects in the standard |
+
+**Twenty-five defects, of which twenty-four came from a cold run or an audit against one.** The number keeps climbing because the method keeps working, not because the document keeps rotting.
 
 None of those would have surfaced from re-reading the file. **That is the method worth stealing more than anything else here: have something with no memory of writing it try to follow it.**
 
@@ -270,7 +279,9 @@ Four of the five implementations need `langgraph`; `--setup` installs it into a 
 
 **The research will age.** Core papers are 2025–2026. If models get dramatically better at coordinating, the loop-first default weakens. `evidence.md` is dated so you can see the shelf life.
 
-**Six trials is not a track record.** They found thirteen defects (above), but six runs — four by the author, two cold — is not a study. Treat the ladder as a well-argued default, not a measured one.
+**Nine trials is not a track record.** They found twenty-five defects (above), but nine runs — four by the author, five cold — is not a study. Treat the ladder as a well-argued default, not a measured one.
+
+**And they clustered.** Every cold run landed at level 1 or level 3. **Levels 4, 5 and 6 have never been exercised by anyone but the author, and Track B — auditing a system that already exists — has never been run cold at all.** The claim above that "landing on level 5 or 6 is equally successful" is reasoned from the method, not observed. If your work genuinely needs fan-out or a durable workflow, you are the first real test of that path, and the author would like to hear how it goes.
 
 ---
 
