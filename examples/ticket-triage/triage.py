@@ -181,23 +181,36 @@ def digest(s: State) -> dict:
 
 
 # ------------------------------------------------------------- the loop -----
+def triage(s: State) -> dict:
+    """Node `triage` in the design. THE writer — sole owner of `assignments`."""
+    r = triage_model.invoke({"tickets": s.tickets, "feedback": s.feedback})
+    return {"assignments": json.loads(r.content),
+            "attempts": s.attempts + 1,
+            "tokens_spent": _tokens(r)}
+
+
+def review(s: State) -> dict:
+    """Node `review` in the design. Read-only — writes verdict/feedback, never
+    assignments. Sees the tickets and the assignments, never the writer's
+    reasoning, so it cannot inherit the writer's mistake."""
+    rv = review_model.invoke({"tickets": s.tickets, "assignments": s.assignments})
+    return {"verdict": rv.content, "feedback": rv.content,
+            "tokens_spent": _tokens(rv)}
+
+
 def run(path: Path = HERE / "tickets.json") -> State:
+    # Every name below is a node in the design diagram, and vice versa. That
+    # correspondence is what makes the diagram checkable rather than decorative.
     s = State()
     s = apply(s, load(path))
     if not s.tickets:
         return s
 
     while s.attempts < MAX_ATTEMPTS and s.tokens_spent < BUDGET_TOKENS:
-        r = triage_model.invoke({"tickets": s.tickets, "feedback": s.feedback})
-        s = apply(s, {"assignments": json.loads(r.content),
-                      "attempts": s.attempts + 1,
-                      "tokens_spent": _tokens(r)})
+        s = apply(s, triage(s))
 
         before = json.dumps(s.assignments, sort_keys=True)
-        rv = review_model.invoke({"tickets": s.tickets,
-                                  "assignments": s.assignments})
-        s = apply(s, {"verdict": rv.content, "feedback": rv.content,
-                      "tokens_spent": _tokens(rv)})
+        s = apply(s, review(s))
         assert json.dumps(s.assignments, sort_keys=True) == before, \
             "reviewer mutated the assignments — it must be read-only"
 

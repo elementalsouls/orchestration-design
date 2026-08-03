@@ -119,6 +119,67 @@ The test is the same for both: *does any node in the loop write the state the lo
 Answer it from the code or the process. Intuition gets this wrong in both directions, which
 is why this is a grep and not a judgement call.
 
+### How to draw it — the styling carries information
+
+An unstyled diagram makes every node look equally cheap and equally safe. They are not.
+Shape and colour here encode **what a node costs and what can go wrong with it**, so the
+reader sees the expensive and unbounded parts *before* anyone builds them. That is the whole
+job of Phase 2.5, and a diagram that hides it has failed at the gate.
+
+| Node | Shape | Fill | Means |
+|---|---|---|---|
+| `([terminal])` | stadium | green | start, done |
+| `[fixed]` | rectangle | grey | deterministic code — free, predictable |
+| `(model)` | rounded | blue | exactly one model call — one bill, one latency |
+| `[[agent]]` | subroutine | **amber, thick border** | loops with tools until *it* decides. **Unbounded by default** |
+| `{router}` | diamond | grey | a branch — every one doubles the paths to test |
+| `[/park/]` | parallelogram | red | the exhaustion terminal: bounds hit, work shipped unreviewed or held |
+
+Amber is doing real work. It is the only fill that means *this node can run away inside a
+design that looks bounded from outside* — the trap in §1. If a reader's eye goes straight to
+the amber box and asks "what stops that?", the diagram has done its job.
+
+Copy this block; change only the `class` lines:
+
+```
+classDef fixed fill:#e8eef2,stroke:#5b7183,color:#1d2b36
+classDef model fill:#dbeafe,stroke:#2563eb,color:#12244a
+classDef agent fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#3a2708
+classDef term  fill:#dcfce7,stroke:#15803d,color:#0a2e15
+classDef halt  fill:#fee2e2,stroke:#b91c1c,color:#3f0d0d
+class load,digest fixed
+class triage,review model
+class S,E term
+class park halt
+```
+
+Light fills with dark text, deliberately: it renders the same on a white README and a dark
+editor, and nobody has to guess which theme the reader is on.
+
+**Label every conditional edge with its bound**, not just its outcome — `FAIL · attempts < 3`,
+not `FAIL`. The bound is the thing a reviewer is checking for, and putting it on the arrow
+means they can check it without reading the tables.
+
+### Node ids are the names in the code
+
+One rule makes the diagram checkable instead of decorative:
+
+> **Every node id in the diagram is a callable in the implementation, and every callable
+> that owns state is a node in the diagram.**
+
+`load` in the diagram is `def load(...)`. `triage` is `def triage(...)`. Not a comment, not
+an inline `.invoke()` buried in a loop body — a named thing you can grep for.
+
+This is what lets a reader believe the picture describes the program. It is also what makes
+Phase 4 possible at every level: at levels 4–6 the framework emits the topology and you
+assert edge-set equality; at levels 1–3 there is no emitted diagram, so this naming rule is
+the only correspondence there is. Break it and the diagram becomes a drawing of something
+that does not exist.
+
+The worked example carries it: `examples/ticket-triage/` has four nodes in its diagram and
+four functions of the same names. It did not always — `triage` and `review` were inline model
+calls, and the diagram promised two nodes the code did not have.
+
 ## 3. State
 
 The shared object that travels along the edges. This is where graphs rot.

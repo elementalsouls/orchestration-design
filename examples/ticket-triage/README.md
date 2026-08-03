@@ -66,12 +66,23 @@ miniature: each handoff can only lose information.
 
 ```mermaid
 flowchart TD
-    S([start]) --> load["load (fn)<br/>read tickets.json, skip malformed"]
-    load --> triage["triage<br/>label + priority + duplicates — THE writer"]
-    triage --> review{"review<br/>read-only, clean context<br/>is anything under-prioritised?"}
-    review -->|"FAIL & attempts < 3"| triage
-    review -->|"PASS / bounds hit"| digest["digest (fn)<br/>render markdown by priority"]
-    digest --> E([end])
+    S([start]) --> load["load<br/>read tickets.json, skip malformed"]
+    load --> triage("triage<br/>label + priority + duplicates — THE writer")
+    triage --> review{{"review<br/>read-only, clean context<br/>anything under-prioritised?"}}
+    review -->|"FAIL · attempts &lt; 3"| triage
+    review -->|"PASS"| digest["digest<br/>render markdown by priority"]
+    review -.->|"bounds hit"| park[/"park<br/>ships marked UNREVIEWED"/]
+    digest --> E([done])
+    park --> E
+
+    classDef fixed fill:#e8eef2,stroke:#5b7183,color:#1d2b36
+    classDef model fill:#dbeafe,stroke:#2563eb,color:#12244a
+    classDef term  fill:#dcfce7,stroke:#15803d,color:#0a2e15
+    classDef halt  fill:#fee2e2,stroke:#b91c1c,color:#3f0d0d
+    class load,digest fixed
+    class triage,review model
+    class S,E term
+    class park halt
 ```
 
 [**Edit this diagram**](https://mermaid.live/edit#pako:eNptUctuwjAQ_JWVDxWopPR1qhAVElSt1EMlesMcTLwhLo4d2ZumEfDvXROEeqgvnn3NrMd7kXuN4glEYX2blyoQfM6lAz7LwSoSJ9ZDyLIpWK_0Sop0waBww8kmjKcBOSKT75DizVf0bgRxZ2qolC18qFBLse7ZTnOJh4JRW2SmHpxorNqghWuog_HBUMdQN7U1uSKMIJv727tH-HxdQMtVDBfSnuJEG_DbYLuXogeX7TLvbDeC3KJykHtH-EOnoomgXEelcVtonMaQndVNRP0sxbGX6OmSxEGKl9nbO1yBIsKqpggTeJDicF7jn_6P2XIJY9h4FohQGkrd2mwxEhvQg79mpjXYu7DTvnWw6S6GXF58nkkvXgxWPLAeihGICkOljE4fyRZQiRVKDlgDC9VY1j2mNtWQX3Yu5xKFBjnT1Jo9nvP-QVXn9PEXkuWxjg==)
