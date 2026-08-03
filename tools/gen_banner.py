@@ -28,8 +28,10 @@ DIM = "#8f9bb3"                           # secondary text
 FAINT = "#5a6580"                         # labels, chrome
 RULE = "#232c42"                          # hairlines
 TEAL = "#3ddad0"                          # primary accent — measured, evidence
-AMBER = "#f2b544"                         # secondary — the "no", the struck-through
+AMBER = "#ff9f1c"                         # secondary — the cost, the warning, the brake
 CARD = "#151d31"
+MICRO = "#a8b2bd"                         # stat micro-copy — lighter than DIM on purpose:
+                                          # 8px notes against a dark canvas need the extra lift
 
 FONT = ("ui-sans-serif,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif")
 MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace"
@@ -102,7 +104,7 @@ def render():
       f'Runtime free: designs built for plain code, LangGraph, or any framework you choose. '
       f'Backed by 2026 AI research — a quoted 90.2 percent multi-agent win cost 15 times the '
       f'tokens, and 80 percent of the variance was spend rather than architecture. '
-      f'Built by Sachin Sharma, bug hunting and GenAI security research. '
+      f'Built by Sachin Sharma, AI systems engineering. '
       f'Installs in seconds with build.sh.">')
 
     # ---------- canvas ----------
@@ -149,7 +151,7 @@ def render():
     a(f'<line x1="{W-60}" y1="238" x2="{W-60}" y2="298" stroke="{RULE}" stroke-width="2"/>')
     a(txt(W - 76, 256, "BUILT BY", 9.5, FAINT, 700, track=2.2, anchor="end"))
     a(txt(W - 76, 276, "Sachin Sharma", 15, INK, 600, anchor="end"))
-    a(txt(W - 76, 293, "Bug hunting & GenAI security research", 10.5, DIM, 400, anchor="end"))
+    a(txt(W - 76, 293, "AI Systems Engineering", 10.5, DIM, 400, anchor="end"))
 
     # ---------- the two engines, plus the portability ----------
     # Three columns because the product genuinely has three claims and the old
@@ -190,7 +192,7 @@ def render():
     for x, big, colour, note in ev:
         a(f'<text x="{x}" y="542" font-family="{MONO}" font-size="24" font-weight="700" '
           f'fill="{colour}">{big}'
-          f'<tspan font-family="{FONT}" font-size="10" font-weight="500" fill="{DIM}" '
+          f'<tspan font-family="{FONT}" font-size="10" font-weight="500" fill="{MICRO}" '
           f'dx="8">{esc(note)}</tspan></text>')
 
     # ---------- install ----------
