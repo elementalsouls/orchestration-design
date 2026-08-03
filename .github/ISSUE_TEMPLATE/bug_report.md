@@ -44,7 +44,7 @@ Everything here is supposed to be verified by one command. If this got past that
 the harness is part of the bug:
 
 ```bash
-python run_checks.py                          # all ten checks
+python run_checks.py                          # every check
 python tools/skill_lint.py skill/orchestration-design
 ```
 

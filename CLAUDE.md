@@ -53,7 +53,7 @@ Edit files under `skill/orchestration-design/`, then run `./build.sh` — it rep
 **The skill ships as markdown only — no Python, no engine.** Triggering is entirely the `description:` frontmatter field. Nothing parses code or builds a graph object. The `.py` files are deliberately *not* in the bundle — they are the reference implementations plus the harness that checks them, and they run here rather than being installed. Designs are Mermaid **text**, never images — text is the only form a human can edit and Phase 4 can assert against.
 
 ## The skill-design standard
-`docs/skill-design-standard.md` is what this repo holds *itself* to, derived 2026-08-02 from the 719 skills installed on this machine. `tools/skill_lint.py` enforces the machine-checkable half and runs as one of the ten checks. Before changing `SKILL.md` frontmatter or adding a reference file:
+`docs/skill-design-standard.md` is what this repo holds *itself* to, derived 2026-08-02 from the 719 skills installed on this machine. `tools/skill_lint.py` enforces the machine-checkable half and runs as one of the checks. Before changing `SKILL.md` frontmatter or adding a reference file:
 
 ```bash
 python tools/skill_lint.py skill/orchestration-design    # exit 1 on any FAIL
@@ -66,7 +66,7 @@ Two pillars are **not** machine-checkable and must not be faked: *evidence disci
 ## Testing
 ```bash
 python run_checks.py --setup               # once per clone: ./.venv + langgraph
-python run_checks.py                       # all ten checks, one exit code
+python run_checks.py                       # every check, one exit code
 python run_checks.py --selftest            # the runner's own assertions
 python tools/mermaid_link.py --selftest    # URL payload round-trips
 python tools/skill_lint.py --selftest      # the lint rules prove themselves

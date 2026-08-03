@@ -1,0 +1,90 @@
+{
+  "_about": [
+    "Labelled outcomes from end-to-end runs of the skill. One record per run that is",
+    "documented somewhere in this repo with enough detail to encode — task, the level",
+    "it should reach, and the trigger that justifies that level.",
+    "",
+    "Why this file exists: the routing behaviour has already regressed once. Cold runs",
+    "3-4 gave the skill a compliance audit with no code in it and the skill did not fire",
+    "at all — every trigger in `description:` was a software noun. The fix was to the",
+    "description, not the method. `description:` is a single 1024-character field under",
+    "constant pressure to be shortened, so the same regression can recur silently on any",
+    "edit. `routing_terms` is the guard: those strings must survive in the description or",
+    "the request stops reaching the skill.",
+    "",
+    "What check_routing.py can and cannot prove is stated in its docstring. Short version:",
+    "it verifies a request can still ROUTE IN. It cannot verify the skill then picks the",
+    "right level, because that needs a model. `expected_level` and `trigger` are recorded",
+    "for the human-run decision eval, and are asserted only for completeness."
+  ],
+
+  "fixtures": [
+    {
+      "id": "validate-installed-skills",
+      "task": "Validate every installed Claude skill in ~/.claude/skills for structural correctness",
+      "kind": "software",
+      "provenance": "author",
+      "expected_level": 1,
+      "trigger": "no judgement a rule cannot encode — structural conformance is mechanical",
+      "routing_terms": ["audit", "review"],
+      "outcome": "Gate refused a graph. Verification then caught two false-positive bugs in the tool it had just written."
+    },
+    {
+      "id": "release-notes-from-git",
+      "task": "Generate release notes from git history",
+      "kind": "software",
+      "provenance": "author",
+      "expected_level": 3,
+      "trigger": "output correctness cannot be asserted mechanically — a claim can be fluent and unsupported",
+      "routing_terms": ["reviewer/verifier agents", "pipeline"],
+      "outcome": "Reviewer caught a hallucinated 'CI pipeline' claim that no commit supported."
+    },
+    {
+      "id": "replace-manual-test-commands",
+      "task": "Replace six manual test commands with one runner",
+      "kind": "software",
+      "provenance": "author",
+      "expected_level": 1,
+      "trigger": "deterministic work — no judgement in scope",
+      "routing_terms": ["CI/CD", "splitting one script into several"],
+      "outcome": "Gate refused again. Found 4 of the 6 documented commands were silently unrunnable."
+    },
+    {
+      "id": "triage-support-tickets",
+      "task": "Triage a queue of support tickets into P0 through P3",
+      "kind": "software",
+      "provenance": "author",
+      "expected_level": 3,
+      "trigger": "output correctness cannot be asserted mechanically — priority is judgement",
+      "routing_terms": ["batch job", "reviewer/verifier agents"],
+      "outcome": "Reviewer caught a cross-account data leak filed P2 instead of P0, and raised it."
+    },
+    {
+      "id": "restaurant-reviews-fanout",
+      "task": "3,000 customer reviews a week across 200 restaurant locations — find out what's actually going wrong at each location",
+      "kind": "software",
+      "provenance": "author",
+      "expected_level": 5,
+      "trigger": "the work exceeds one context window — a week of raw reviews is ~240k tokens",
+      "routing_terms": ["fan-out/fan-in", "batch job"],
+      "outcome": "Fan out where forced (240k), rejoin where not (200 summaries = 30k). Published as the README's worked example."
+    },
+    {
+      "id": "compliance-audit-process",
+      "task": "Run a compliance audit across a body of policy documents and report what is not covered",
+      "kind": "process",
+      "provenance": "cold",
+      "expected_level": 3,
+      "trigger": "coverage cannot be asserted mechanically, and the work runs across sessions",
+      "routing_terms": ["compliance pass", "audit", "coverage matters", "I don't know what I've already covered"],
+      "outcome": "THE REGRESSION THIS FILE GUARDS. Originally scored zero invocations — every trigger was a software noun. Fired on the first turn after the description gained PROCESS vocabulary."
+    }
+  ],
+
+  "_not_recorded": [
+    "The README claims nine end-to-end runs. Six are written down in enough detail to",
+    "encode here; the rest were not recorded structurally at the time, which is precisely",
+    "why regression testing was not possible before now. Treat the gap as a finding, not",
+    "as a fixture set that is merely incomplete — and record new runs here as they happen."
+  ]
+}

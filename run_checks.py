@@ -69,6 +69,10 @@ def discover() -> list[dict]:
     for tool in ("mermaid_link", "term_svg", "skill_lint", "gen_banner"):
         checks.append({"name": f"tools/{tool}", "path": ROOT / "tools" / f"{tool}.py",
                        "needs": None, "args": ["--selftest"]})
+    # the routing surface is one 1024-char string that has already failed once;
+    # every other check here proves the examples run, not that a user reaches them
+    checks.append({"name": "evals/routing", "path": ROOT / "evals" / "check_routing.py",
+                   "needs": None, "args": ["--selftest"]})
     return checks
 
 

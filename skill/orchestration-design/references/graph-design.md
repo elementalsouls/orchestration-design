@@ -249,12 +249,52 @@ Read it two ways, and say the answer out loud:
 Note the third row: fan-out often costs *more* than a loop with a reviewer,
 because per-item overhead is paid N times. "More parallel" is not "cheaper".
 
-If the chosen number is shocking, **the design is wrong** — reduce attempts,
+### Count tokens, then price them — they are not the same question
+
+The arithmetic above yields a **token count**. The decision needs a **bill**, and on
+any provider with prompt caching those two diverge by roughly an order of magnitude
+in exactly the place this skill is most reluctant to approve.
+
+Fan-out is the case. Two hundred branches sharing one system prompt, one instruction
+block and one schema pay for that prefix **once at write, then at cache-read rates for
+every branch after**. Cache reads are priced far below fresh input — an order of
+magnitude on Anthropic's published pricing. So a raw token multiplier systematically
+overstates what level 5 actually costs, and a cost table that ignores it will push a
+design down the ladder for a reason that is not true.
+
+Split the estimate rather than inflating one number:
+
+```
+cached_prefix   × 1              -> written once, at the cache-write rate
+cached_prefix   × (branches - 1) -> read back, at the cache-read rate
+unique_input    × branches       -> full input rate
+output          × branches       -> full output rate, never cached
+```
+
+Three things worth holding on to:
+
+- **Output tokens never cache.** A reviewer that writes a long verdict, or an agent
+  node that reasons at length, costs full rate on every branch. Where the bill is
+  dominated by output, caching changes nothing and the raw multiplier is honest.
+- **This does not soften rule 2.** *Structure does not buy intelligence* rests on
+  Tran & Kiela, who matched **thinking tokens** — output, uncacheable. Caching makes
+  multi-agent **cheaper**, never **smarter**. A design that was wrong on accuracy
+  grounds is still wrong at half the price.
+- **Caching needs a stable prefix.** Per-branch preamble that varies (an item id, a
+  timestamp, a shuffled context) invalidates the cache. If you are costing a fan-out
+  on cache-read rates, say in the design that the prefix is fixed — otherwise the
+  estimate is fiction.
+
+If the chosen number is still shocking, **the design is wrong** — reduce attempts,
 route cheap work to a cheap model, or triage so only hard items take the
 expensive path. Do not treat the budget as the thing that needs adjusting.
 
-Two levers that usually help more than they look:
+Three levers that usually help more than they look:
 
+- **Model tier per node.** This is the first lever, not the last. Node kinds already
+  distinguish `fixed` / `model` / `agent`; assign a model per `model` node the same
+  way. A cheap model on the mechanical nodes routinely saves more than a whole rung
+  of ladder discipline, and it is a one-line change rather than a redesign.
 - **Triage node.** A cheap classifier routing items to a cheap path or an expensive path often cuts cost by most of it, because the majority of items are usually easy.
 - **Fewer attempts.** Going from 3 to 2 attempts on a 400-item fan-out is a third of the worst-case bill.
 

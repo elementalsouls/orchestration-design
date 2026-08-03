@@ -63,7 +63,7 @@ Read `references/graph-design.md`. Produce exactly five parts:
 2. **Edges** — routing as a Mermaid diagram. As few conditional edges as the work needs.
 3. **State schema** — type, reducer, and **which single node writes it**. Fan-in fields need append reducers. This is how rule 1 gets enforced.
 4. **Bounds** — an attempt counter on every loop-back, a global step limit, and a spend budget a router reads. **Where nothing costs tokens, bound what does cost**: HTTP requests, pages fetched, wall clock. A level-1 design is still capable of running away.
-5. **Cost, compared** — the level you chose **and the levels either side**. A single number informs nothing; the delta does. If the level below is nearly as cheap you climbed too far; if the level above buys nothing, say so out loud.
+5. **Cost, compared** — the level you chose **and the levels either side**. A single number informs nothing; the delta does. If the level below is nearly as cheap you climbed too far; if the level above buys nothing, say so out loud. **Price tokens, don't just count them**: branches sharing a fixed prefix bill at cache-read rates, so a raw multiplier overstates fan-out (`graph-design.md` §5).
 
 ### Before you draw a loop-back, check its premise
 

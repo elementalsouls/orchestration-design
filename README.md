@@ -319,6 +319,18 @@ Every defect below came from *using* the skill, not reading it. Each traceable t
 
 None of them would have surfaced from re-reading the file. **That is the part worth stealing regardless of whether you install this: have something with no memory of writing it try to follow it.**
 
+### The routing regression now has a guard
+
+Worth separating out, because it's the one failure that could recur silently.
+
+The skill has exactly one routing surface: the `description:` field. One string, 979 of a hard 1024 characters, permanently under pressure to be shortened. When cold runs 3–4 handed it a compliance audit with no code in it, it scored **zero invocations** — every trigger was a software noun. The method was fine. The door was shut.
+
+Nothing in the harness would have caught that, and nothing would have caught it recurring. Every other check proves the *examples run*, which says nothing about whether a user's request ever reaches the skill.
+
+So the documented runs are now fixtures in [`evals/routing-fixtures.json`](evals/routing-fixtures.json), each recording the routing terms its request depends on. `evals/check_routing.py` asserts they survive in the description, and it is negative-tested against the real regression — strip the PROCESS vocabulary back out and it fails, naming the run that would stop firing.
+
+Two honest limits on it. It proves a request can still **route in**; it cannot prove the skill then picks the right **level**, because that needs a model and a human reading a transcript — so the check says so in its own output rather than letting a green tick overstate itself. And only **six** of the nine runs were written down in enough detail to encode. The other three weren't recorded structurally at the time, which is exactly why none of this was testable until now.
+
 ---
 
 ## What's in the skill
@@ -385,6 +397,12 @@ Four of the five implementations need `langgraph`; `--setup` installs it into a 
 
 **The research will age.** Core papers are 2025–2026. If models get dramatically better at coordinating, the loop-first default weakens. `evidence.md` is dated so you can see the shelf life.
 
+**Three things a GenAI engineer will ask for that aren't here yet.** Naming them beats half-answering them in a skill whose whole argument is "don't add what you can't justify":
+
+- **The context-degradation crossover isn't operationalized.** Tran & Kiela find multi-agent *does* overtake once effective context is degraded far enough (α = 0.7). That is the one condition that flips this skill's recommendation, and there's no test for *"am I in that regime?"* — so it currently reads as a disclaimer rather than a branch.
+- **Reviewer efficacy is argued, never measured.** Level 3 is the default and its entire value is the reviewer. The fix for a rubber-stamp reviewer is structural (separate step, clean context), and structural fixes are checkable — but nothing here measures a false-approve rate.
+- **No production observability guidance.** Track B reconstructs a design from source. Reading traces from a running system is a different skill, and it's the one most people actually need at 3am.
+
 **Nine trials is not a track record.** They found twenty-five defects, but nine runs — four by the author, five cold — is not a study. Treat the ladder as a well-argued default, not a measured one.
 
 **And they clustered.** Every cold run landed at level 1 or level 3. **Levels 4, 5 and 6 have never been exercised by anyone but the author, and Track B — auditing a system that already exists — has never been run cold at all.** The claim that "landing on level 5 or 6 is equally successful" is reasoned from the method, not observed. If your work genuinely needs fan-out or a durable workflow, you are the first real test of that path — and the author would very much like to hear how it goes.
@@ -397,6 +415,8 @@ Four of the five implementations need `langgraph`; `--setup` installs it into a 
 skill/orchestration-design/    skill source — edit here, then ./build.sh
 reference-implementation/      five runnable examples + verify_topology.py
 examples/ticket-triage/        full worked walkthrough, start to finish
+evals/routing-fixtures.json    documented runs, labelled — task, level, trigger
+evals/check_routing.py         asserts every one can still route in
 tools/gen_banner.py            README banner (regenerate, never hand-edit)
 tools/mermaid_link.py          diagram -> pre-filled mermaid.live edit URL
 tools/term_svg.py              captured terminal output -> SVG for this README
