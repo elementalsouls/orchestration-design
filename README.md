@@ -1,4 +1,4 @@
-![orchestration-design — a skill for Claude Code and Hermes that decides how much orchestration your work actually needs, and usually concludes it is less than you think. The evidence: a widely quoted 90.2% multi-agent win used 15x the tokens, and token spend alone explained 80% of the performance variance. Six levels, twelve markdown files, zero dependencies, eight cited sources.](docs/img/banner.svg)
+![orchestration-design, a skill for Claude Code and Hermes. Stop paying multi-agent prices for single-agent quality. The gatekeeper decides exactly how much orchestration your pipeline actually needs; the emergency brake is tactical micro-skills that snap agents out of endless execution loops; runtime free means designs built for plain code, LangGraph, or any framework you choose. Backed by 2026 AI research — a quoted 90.2% multi-agent win cost 15x the tokens, and 80% of the variance was spend rather than architecture.](docs/img/banner.svg)
 
 # orchestration-design
 

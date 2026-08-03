@@ -90,11 +90,14 @@ def render():
     o = []
     a = o.append
     a(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
-      f'role="img" aria-label="orchestration-design. A skill for Claude Code and Hermes that decides how much '
-      f'orchestration your work actually needs, and usually concludes it is less than you think. '
-      f'The evidence: a widely quoted 90.2 percent multi-agent win used 15 times the tokens, and '
-      f'token spend alone explained 80 percent of the performance variance. Six levels, twelve '
-      f'markdown files, zero dependencies, eight cited sources, MIT licence.">')
+      f'role="img" aria-label="orchestration-design, a skill for Claude Code and Hermes. '
+      f'Stop paying multi-agent prices for single-agent quality. '
+      f'The gatekeeper: decides exactly how much orchestration your pipeline actually needs. '
+      f'The emergency brake: tactical micro-skills to snap agents out of endless execution loops. '
+      f'Runtime free: designs built for plain code, LangGraph, or any framework you choose. '
+      f'Backed by 2026 AI research — a quoted 90.2 percent multi-agent win cost 15 times the '
+      f'tokens, and 80 percent of the variance was spend rather than architecture. '
+      f'Installs in seconds with build.sh.">')
 
     # ---------- canvas ----------
     a('<defs>'
@@ -127,64 +130,60 @@ def render():
       f'<tspan fill="{TEAL}">design</tspan></text>')
     a(f'<line x1="214" y1="216" x2="880" y2="216" stroke="url(#rule)" stroke-width="2.5"/>')
 
-    # ---------- feature strip ----------
-    for i, (label, x) in enumerate((("DESIGN GATE, NOT A GRAPH BUILDER", 216),
-                                    ("EVIDENCE-BACKED", 592),
-                                    ("ANY RUNTIME — OR NONE", 800))):
-        a(txt(x, 244, "+", 12, TEAL, 700))
-        a(txt(x + 13, 244, label, 11, DIM, 600, track=1.5))
+    # ---------- the hook ----------
+    # The one sentence someone should carry away. Sized to dominate: if a reader
+    # takes nothing else off this image, it should be this.
+    a(txt(214, 256, "Stop paying multi-agent prices", 27, INK, 700))
+    a(txt(214, 290, "for single-agent quality.", 27, TEAL, 700))
 
-    a(txt(216, 278, "Decides how much orchestration your work actually needs — and usually "
-                    "concludes it's less than you think.", 15.5, DIM))
+    # ---------- the two engines, plus the portability ----------
+    # Three columns because the product genuinely has three claims and the old
+    # paragraph buried all of them. Label in accent, copy in two fixed lines —
+    # wrapped by hand because SVG <text> does not wrap and a renderer that
+    # disagrees with our metrics would otherwise run a column into its neighbour.
+    a(f'<line x1="60" y1="340" x2="{W-60}" y2="340" stroke="{RULE}"/>')
 
-    # ---------- metadata card ----------
-    bx, by, bw, bh = W - 60 - 268, 96, 268, 108
-    a(f'<rect x="{bx}" y="{by}" width="{bw}" height="{bh}" rx="7" fill="{CARD}" '
-      f'stroke="{TEAL}" stroke-width="1.2" opacity="0.95"/>')
-    a(f'<circle cx="{bx+18}" cy="{by+22}" r="4" fill="{TEAL}"/>')
-    a(txt(bx + 30, by + 26, "LOADS ON TOPIC", 10.5, TEAL, 700, track=1.8))
-    a(f'<line x1="{bx+16}" y1="{by+38}" x2="{bx+bw-16}" y2="{by+38}" stroke="{RULE}"/>')
-    for i, (k, v) in enumerate((("LICENCE", "MIT"), ("AUTHOR", "Sachin Sharma"),
-                                ("UPDATED", "2026-08"))):
-        y = by + 58 + i * 19
-        a(txt(bx + 16, y, k, 9.5, FAINT, 600, track=1.4))
-        a(txt(bx + bw - 16, y, v, 10.5, DIM, 500, anchor="end"))
+    cols = (
+        (60,   "01", "THE GATEKEEPER",      TEAL,
+         "Decides exactly how much orchestration",
+         "your pipeline actually needs."),
+        (520,  "02", "THE EMERGENCY BRAKE", AMBER,
+         "Tactical micro-skills to snap agents out",
+         "of endless execution loops."),
+        (980,  "03", "RUNTIME FREE",        TEAL,
+         "Designs built for plain code, LangGraph,",
+         "or any framework you choose."),
+    )
+    for x, num, label, colour, l1, l2 in cols:
+        a(f'<line x1="{x}" y1="370" x2="{x}" y2="440" stroke="{colour}" '
+          f'stroke-width="2.5" opacity="0.85"/>')
+        a(txt(x + 16, 384, num, 10, colour, 700, MONO, track=1.2))
+        a(txt(x + 40, 384, label, 12, colour, 700, track=2.2))
+        a(txt(x + 16, 412, l1, 14.5, INK, 500))
+        a(txt(x + 16, 433, l2, 14.5, DIM, 400))
 
-    # ---------- the evidence ----------
-    a(f'<line x1="60" y1="322" x2="{W-60}" y2="322" stroke="{RULE}"/>')
-    a(txt(60, 350, "THE EVIDENCE — WHY \"LESS THAN YOU THINK\" IS A CLAIM, NOT AN OPINION",
-          10.5, FAINT, 700, track=2.2))
+    # ---------- evidence, condensed to a footnote ----------
+    # Deliberately small. The numbers are the differentiator but they are not the
+    # hook — they answer "why should I believe you", which is the second question
+    # a reader asks, not the first.
+    a(f'<line x1="60" y1="478" x2="{W-60}" y2="478" stroke="{RULE}"/>')
+    a(txt(60, 504, "BACKED BY 2026 AI RESEARCH", 10, FAINT, 700, track=2.2))
 
-    ev = ((60,  "90.2%", AMBER, "the multi-agent win everyone quotes",
-           "Anthropic, multi-agent research system"),
-          (498, "15×", AMBER, "the token cost in that same footnote",
-           "same paper, rarely repeated"),
-          (936, "80%", TEAL, "of the variance explained by spend alone",
-           "not by architecture"))
-    for x, big, colour, line1, line2 in ev:
-        a(txt(x, 412, big, 44, colour, 700, MONO, track=-1))
-        a(txt(x, 438, line1, 12.5, DIM, 500))
-        a(txt(x, 456, line2, 11, FAINT, 400))
+    ev = ((60,  "90.2%", AMBER, "quoted multi-agent win"),
+          (255, "15×",   AMBER, "tokens it actually cost"),
+          (420, "80%",   TEAL,  "of variance = spend, not architecture"))
+    for x, big, colour, note in ev:
+        a(f'<text x="{x}" y="542" font-family="{MONO}" font-size="24" font-weight="700" '
+          f'fill="{colour}">{big}'
+          f'<tspan font-family="{FONT}" font-size="10" font-weight="500" fill="{DIM}" '
+          f'dx="8">{esc(note)}</tspan></text>')
 
-    a(txt(60, 492, "Two follow-ups held compute constant. Under matched budgets a single agent was "
-                   "best or statistically indistinguishable from best at every budget but the lowest.",
-          12.5, DIM))
-
-    # ---------- stats + install ----------
-    a(f'<line x1="60" y1="516" x2="{W-60}" y2="516" stroke="{RULE}"/>')
-    stats = (("6", "LEVELS"), ("12", "FILES"), ("0", "DEPENDENCIES"),
-             ("8", "CITED SOURCES"), ("13", "DEFECTS SELF-FOUND"))
-    for i, (n, lab) in enumerate(stats):
-        x = 60 + i * 138
-        a(f'<text x="{x}" y="552" font-family="{MONO}" font-size="27" font-weight="700" '
-          f'fill="{TEAL}">{n}'
-          f'<tspan font-family="{FONT}" font-size="9.5" font-weight="600" fill="{FAINT}" '
-          f'letter-spacing="1.3" dx="7"> {lab}</tspan></text>')
-
-    a(f'<rect x="{W-60-430}" y="530" width="430" height="30" rx="5" fill="{CARD}" stroke="{RULE}"/>')
-    a(txt(W - 60 - 414, 550, "$", 11.5, TEAL, 700, MONO))
-    a(txt(W - 60 - 400, 550, "./build.sh", 11.5, INK, 500, MONO))
-    a(txt(W - 60 - 16, 550, "installs in seconds · zero lock-in", 10, FAINT, 400, MONO, anchor="end"))
+    # ---------- install ----------
+    a(f'<rect x="{W-60-372}" y="518" width="372" height="32" rx="5" fill="{CARD}" '
+      f'stroke="{TEAL}" stroke-width="1.1" opacity="0.9"/>')
+    a(txt(W - 60 - 356, 539, "$", 12, TEAL, 700, MONO))
+    a(txt(W - 60 - 342, 539, "./build.sh", 12, INK, 600, MONO))
+    a(txt(W - 60 - 16, 539, "installs in seconds", 10.5, FAINT, 400, MONO, anchor="end"))
 
     a("</svg>")
     return "\n".join(o)
