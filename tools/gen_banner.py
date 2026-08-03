@@ -90,7 +90,7 @@ def render():
     o = []
     a = o.append
     a(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
-      f'role="img" aria-label="orchestration-design. A Claude Code skill that decides how much '
+      f'role="img" aria-label="orchestration-design. A skill for Claude Code and Hermes that decides how much '
       f'orchestration your work actually needs, and usually concludes it is less than you think. '
       f'The evidence: a widely quoted 90.2 percent multi-agent win used 15 times the tokens, and '
       f'token spend alone explained 80 percent of the performance variance. Six levels, twelve '
@@ -111,7 +111,7 @@ def render():
     a(f'<rect width="{W}" height="{H}" fill="url(#glow)"/>')
 
     # ---------- chrome ----------
-    a(txt(60, 40, "ORCHESTRATION-DESIGN / MAIN / CLAUDE CODE SKILL", 10.5, FAINT, 600, track=2.4))
+    a(txt(60, 40, "ORCHESTRATION-DESIGN / MAIN / CLAUDE CODE + HERMES", 10.5, FAINT, 600, track=2.4))
     a(txt(W - 60, 40, "github.com/elementalsouls/orchestration-design", 10.5, FAINT,
           500, MONO, anchor="end"))
     a(f'<line x1="60" y1="58" x2="{W-60}" y2="58" stroke="{RULE}" stroke-width="1"/>')

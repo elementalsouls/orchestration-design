@@ -1,4 +1,4 @@
-![orchestration-design — a Claude Code skill that decides how much orchestration your work actually needs, and usually concludes it is less than you think. The evidence: a widely quoted 90.2% multi-agent win used 15x the tokens, and token spend alone explained 80% of the performance variance. Six levels, twelve markdown files, zero dependencies, eight cited sources.](docs/img/banner.svg)
+![orchestration-design — a skill for Claude Code and Hermes that decides how much orchestration your work actually needs, and usually concludes it is less than you think. The evidence: a widely quoted 90.2% multi-agent win used 15x the tokens, and token spend alone explained 80% of the performance variance. Six levels, twelve markdown files, zero dependencies, eight cited sources.](docs/img/banner.svg)
 
 # orchestration-design
 
@@ -19,7 +19,9 @@ git clone https://github.com/elementalsouls/orchestration-design.git
 cd orchestration-design && ./build.sh
 ```
 
-Then say *"my pipeline is a mess"* or *"I'm stuck in a loop"* in Claude Code. The skill loads itself — you never invoke it by name.
+Then say *"my pipeline is a mess"* or *"I'm stuck in a loop"*. The skill loads itself — you never invoke it by name.
+
+Runs on **Claude Code** and **Hermes**. `./build.sh` installs for Claude Code; on Hermes, point it at the `skill/orchestration-design/` directory — the package is portable because it is markdown with no runtime, no imports and no build step.
 
 Built by **[Sachin Sharma](https://www.linkedin.com/in/sachinsharma8080/)** — Bug Hunting & GenAI Security Research.
 
