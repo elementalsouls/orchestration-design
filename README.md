@@ -8,7 +8,18 @@
 [![dependencies: none](https://img.shields.io/badge/dependencies-none-0D6A73)](#install)
 [![evidence: 8 sources, dated](https://img.shields.io/badge/evidence-8%20sources%2C%20dated-8A5E06)](skill/orchestration-design/references/evidence.md)
 
-> A Claude Code skill that decides **how much orchestration your work actually needs** — and usually concludes it's less than you think. The skill is 12 markdown files with no runtime and no dependencies. The repo around it is five runnable implementations and a ten-check suite that proves them.
+> ## Stop paying multi-agent prices for single-agent quality.
+>
+> It tells you **exactly how much orchestration your work needs**, designs it before a line is written, and ships **tactical micro-skills that break an agent out of an execution loop** when you're already stuck.
+>
+> 12 markdown files. No runtime, no dependencies, nothing to import.
+
+```bash
+git clone https://github.com/elementalsouls/orchestration-design.git
+cd orchestration-design && ./build.sh
+```
+
+Then say *"my pipeline is a mess"* or *"I'm stuck in a loop"* in Claude Code. The skill loads itself — you never invoke it by name.
 
 Built by **[Sachin Sharma](https://www.linkedin.com/in/sachinsharma8080/)** — Bug Hunting & GenAI Security Research.
 
@@ -67,29 +78,40 @@ When the work **genuinely** needs structure, the same ladder says so — and nam
 
 ---
 
-## The research this is built on
+## What it hands you
 
-This skill is not a set of opinions about architecture. It is a reading of the 2025–2026 literature, turned into a decision procedure. Every default in it traces to one of these.
+Not advice — a design you can argue with. This is the real output for *"3,000 customer reviews a week across 200 restaurant locations, find out what's going wrong at each one"*:
 
-| Source | What it establishes | Weight |
-|---|---|---|
-| [Anthropic — *How we built our multi-agent research system*](https://www.anthropic.com/engineering/multi-agent-research-system) | The **90.2%** multi-agent win everyone quotes — and the footnote almost nobody repeats: it used **~15× the tokens**, **token spend alone explained 80% of the performance variance**, and three factors together explained **95%**. | Production report |
-| [Tran & Kiela — *Single-Agent LLMs Outperform Multi-Agent Systems Under Equal Thinking Token Budgets*](https://arxiv.org/abs/2604.02460) | Holds compute constant. A single agent was **best or statistically indistinguishable from best at every budget except the lowest (100 tokens)**. Grounded in the **Data Processing Inequality**: a handoff can lose information, never create it. Also finds the **crossover** — under heavy context degradation (α = 0.7) multi-agent does overtake. | **Controlled experiment** |
-| [Jwalapuram et al. — *The Illusion of Multi-Agent Advantage*](https://arxiv.org/abs/2606.13003) | Auto-generated multi-agent architectures **"consistently underperform CoT-SC despite being up to 10x more expensive."** A cost-effectiveness result, not a second replication — same direction, different route. | **Controlled experiment** |
-| [Cemri et al. — *Why Do Multi-Agent LLM Systems Fail?*](https://arxiv.org/abs/2503.13657) · NeurIPS 2025 | The MAST taxonomy — **1600+ traces, 7 frameworks, κ = 0.88, 14 failure modes in 3 categories.** Targeted fixes gave *"+14% improvement for ChatDev, [but] the improved performance remains insufficiently low for real-world deployment."* | Peer-reviewed |
-| [Cognition — *Don't Build Multi-Agents*](https://cognition.com/blog/dont-build-multi-agents) (2025) | Why parallel writers making conflicting implicit decisions is the failure mode that killed agent-swarm designs industry-wide. | Practitioner |
-| [Cognition — *Multi-Agents: What's Actually Working*](https://cognition.com/blog/multi-agents-working) (2026) | The **single-writer rule** — the one structural constraint that survives contact with production. | Practitioner |
-| [LangChain — *3 Years of Graph Engineering with LangGraph*](https://www.langchain.com/blog/3-years-of-graph-engineering-with-langgraph) (2026) | The graph vendor's own **"loops are simple graphs"**, and two teams — LangChain's deep research and GPT Researcher — migrating graph → loop. An admission against interest. Also the seventh trigger: **is the route knowable at all?** | Practitioner (weigh as vendor) |
-| [aibuilderclub — *Graph Engineering Guide 2026*](https://www.aibuilderclub.com/blog/graph-engineering-guide-2026) | The five-layer model and the 8-point checklist this skill grew out of, plus *"state drift is the #1 way graphs rot."* | Practitioner |
+```mermaid
+flowchart TD
+    S([week starts]) --> fetch["fetch<br/>pull reviews, group by location"]
+    fetch -.->|"fan out · 200 locations"| summarise("summarise<br/>this location's issues, each citing a review")
+    summarise --> verify{{"verify<br/>read-only · does every issue cite a real review?"}}
+    verify -->|"FAIL · attempts &lt; 2"| summarise
+    verify -->|"PASS"| collect["collect<br/>fan-in · append reducer"]
+    verify -.->|"bounds hit"| flag[/"flag<br/>ships UNVERIFIED, listed in gaps"/]
+    flag --> collect
+    collect --> synthesise("synthesise<br/>all 200 summaries at once<br/>chain-wide or local?")
+    synthesise --> report["report<br/>per-location + chain view"]
+    report --> E([done])
 
-**The conclusion the papers converge on:** most people building agent systems right now are paying multi-agent prices for single-agent quality.
+    classDef fixed fill:#e8eef2,stroke:#5b7183,color:#1d2b36
+    classDef model fill:#dbeafe,stroke:#2563eb,color:#12244a
+    classDef term  fill:#dcfce7,stroke:#15803d,color:#0a2e15
+    classDef halt  fill:#fee2e2,stroke:#b91c1c,color:#3f0d0d
+    class fetch,collect,report fixed
+    class summarise,verify,synthesise model
+    class S,E term
+    class flag halt
+```
 
-Two rules fall out of that, and they hold at every level of the ladder:
+**The colours carry information, not decoration.** Grey is deterministic code — free. Blue is exactly one model call — one bill. Red is the exhaustion terminal: bounds hit, work ships *marked* rather than silently. There is a fifth, amber, for an agent node that loops with tools until it decides it's done — **unbounded by default**, and its absence here tells you nothing in this design can run away.
 
-1. **One writer. Always.** Extra nodes contribute judgement, never edits.
-2. **Structure does not buy intelligence.** Climbing costs money and reliability. Most reported multi-agent wins track token spend, not architecture.
+**Node ids are the function names.** `fetch` in the diagram is `def fetch(...)` in the code. That correspondence is what makes the picture checkable instead of decorative — and at levels 1–3, where no framework emits a topology, it's the only correspondence there is.
 
-`references/evidence.md` carries the full reading, **dated**, and separates controlled experiments from single-company production reports — so you can see the shelf life and weigh each claim yourself. If the models get dramatically better at coordinating, the loop-first default weakens, and the file says so.
+Two numbers decided the whole shape. A week of raw reviews is **240,000 tokens** — exceeds one context window, so the work must split. All 200 summaries together are **30,000** — so they don't. Fan out where it's forced, rejoin where it isn't, because *"is this chain-wide or just this branch?"* is a question no single branch can answer.
+
+A second worked example, end to end with its assertions, lives in [`examples/ticket-triage/`](examples/ticket-triage/).
 
 ---
 
@@ -151,6 +173,32 @@ So there is a second layer. `modules/` holds self-contained protocols you invoke
 **The order is the point.** `context-auditor` prevents loops by removing the wrong premises that cause them; `rubber-duck-verifier` breaks one already running; `adversarial-reviewer` catches what survives. Reaching for the third when the first was skipped is the common expensive mistake — **a reviewer cannot see a premise that is wrong in both the code and the review.**
 
 Entry conditions are observations, not feelings: the same file edited three times with the error unchanged, a test failing the same way twice, or choosing the next fix because the last one failed. One is enough. Routing lives in [`references/tactical-interventions.md`](skill/orchestration-design/references/tactical-interventions.md).
+
+---
+
+## The research this is built on
+
+This skill is not a set of opinions about architecture. It is a reading of the 2025–2026 literature, turned into a decision procedure. Every default in it traces to one of these.
+
+| Source | What it establishes | Weight |
+|---|---|---|
+| [Anthropic — *How we built our multi-agent research system*](https://www.anthropic.com/engineering/multi-agent-research-system) | The **90.2%** multi-agent win everyone quotes — and the footnote almost nobody repeats: it used **~15× the tokens**, **token spend alone explained 80% of the performance variance**, and three factors together explained **95%**. | Production report |
+| [Tran & Kiela — *Single-Agent LLMs Outperform Multi-Agent Systems Under Equal Thinking Token Budgets*](https://arxiv.org/abs/2604.02460) | Holds compute constant. A single agent was **best or statistically indistinguishable from best at every budget except the lowest (100 tokens)**. Grounded in the **Data Processing Inequality**: a handoff can lose information, never create it. Also finds the **crossover** — under heavy context degradation (α = 0.7) multi-agent does overtake. | **Controlled experiment** |
+| [Jwalapuram et al. — *The Illusion of Multi-Agent Advantage*](https://arxiv.org/abs/2606.13003) | Auto-generated multi-agent architectures **"consistently underperform CoT-SC despite being up to 10x more expensive."** A cost-effectiveness result, not a second replication — same direction, different route. | **Controlled experiment** |
+| [Cemri et al. — *Why Do Multi-Agent LLM Systems Fail?*](https://arxiv.org/abs/2503.13657) · NeurIPS 2025 | The MAST taxonomy — **1600+ traces, 7 frameworks, κ = 0.88, 14 failure modes in 3 categories.** Targeted fixes gave *"+14% improvement for ChatDev, [but] the improved performance remains insufficiently low for real-world deployment."* | Peer-reviewed |
+| [Cognition — *Don't Build Multi-Agents*](https://cognition.com/blog/dont-build-multi-agents) (2025) | Why parallel writers making conflicting implicit decisions is the failure mode that killed agent-swarm designs industry-wide. | Practitioner |
+| [Cognition — *Multi-Agents: What's Actually Working*](https://cognition.com/blog/multi-agents-working) (2026) | The **single-writer rule** — the one structural constraint that survives contact with production. | Practitioner |
+| [LangChain — *3 Years of Graph Engineering with LangGraph*](https://www.langchain.com/blog/3-years-of-graph-engineering-with-langgraph) (2026) | The graph vendor's own **"loops are simple graphs"**, and two teams — LangChain's deep research and GPT Researcher — migrating graph → loop. An admission against interest. Also the seventh trigger: **is the route knowable at all?** | Practitioner (weigh as vendor) |
+| [aibuilderclub — *Graph Engineering Guide 2026*](https://www.aibuilderclub.com/blog/graph-engineering-guide-2026) | The five-layer model and the 8-point checklist this skill grew out of, plus *"state drift is the #1 way graphs rot."* | Practitioner |
+
+**The conclusion the papers converge on:** most people building agent systems right now are paying multi-agent prices for single-agent quality.
+
+Two rules fall out of that, and they hold at every level of the ladder:
+
+1. **One writer. Always.** Extra nodes contribute judgement, never edits.
+2. **Structure does not buy intelligence.** Climbing costs money and reliability. Most reported multi-agent wins track token spend, not architecture.
+
+`references/evidence.md` carries the full reading, **dated**, and separates controlled experiments from single-company production reports — so you can see the shelf life and weigh each claim yourself. If the models get dramatically better at coordinating, the loop-first default weakens, and the file says so.
 
 ---
 
