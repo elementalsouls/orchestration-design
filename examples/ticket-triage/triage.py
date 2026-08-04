@@ -51,7 +51,12 @@ class State:
 # footgun: `assignments` is a list the design marks REPLACE (single owner,
 # rewritten whole each round). Inferring append silently stacks round 2 on top
 # of round 1 — the same ticket appears twice at two different priorities.
-APPEND = {"errors", "tickets"}       # everything else replaces
+#
+# `+` implements TWO of the Phase 2 reducers: append for lists, sum for ints.
+# `tokens_spent` is the sum one, and leaving it out is how a spend bound goes
+# decorative — the field gets overwritten with the cost of the last call, so it
+# never climbs and `tokens_spent < BUDGET_TOKENS` can never go false.
+APPEND = {"errors", "tickets", "tokens_spent"}   # everything else replaces
 
 
 def apply(s: State, update: dict) -> State:
@@ -225,7 +230,7 @@ def run(path: Path = HERE / "tickets.json") -> State:
 # ------------------------------------------------------------- selftest -----
 def _selftest() -> int:
     """Phase 4 at level 3 — assert behaviour, not topology."""
-    global review_model
+    global review_model, BUDGET_TOKENS
     s = run()
 
     # 1. the reviewer never edits (also asserted inline every round, above)
@@ -256,6 +261,24 @@ def _selftest() -> int:
     finally:
         review_model = saved
 
+    # 2b. the SECOND bound is live too. The attempt cap above always fires
+    # first at normal budgets, so a spend field that silently fails to
+    # accumulate would pass every other assertion here — which is exactly how
+    # a budget goes decorative. Force the spend cap to be the thing that stops
+    # the run, and assert the attempt cap did NOT get there first.
+    saved_r, review_model = review_model, _Stub(lambda p: "FAIL: never happy")
+    saved_b, BUDGET_TOKENS = BUDGET_TOKENS, 300      # one round costs 480
+    try:
+        sp = run()
+        assert sp.attempts < MAX_ATTEMPTS, \
+            f"attempt cap stopped it, not the spend cap ({sp.attempts} attempts)"
+        assert sp.tokens_spent >= BUDGET_TOKENS, \
+            f"tokens_spent never accumulated: {sp.tokens_spent}"
+        assert "UNREVIEWED" in sp.digest
+        assert "bounds exhausted" in sp.errors[-1]
+    finally:
+        review_model, BUDGET_TOKENS = saved_r, saved_b
+
     # 4. failure isolation: a malformed ticket is skipped, run still completes
     import tempfile
     with tempfile.TemporaryDirectory() as tmp:
@@ -267,8 +290,8 @@ def _selftest() -> int:
         assert any("malformed" in e for e in c.errors)
         assert c.digest, "one bad ticket killed the digest"
 
-    print("OK: leak raised to P0, reviewer read-only, bound live, "
-          "exhaustion marked, malformed ticket isolated.")
+    print("OK: leak raised to P0, reviewer read-only, both bounds live "
+          "(attempts and spend), exhaustion marked, malformed ticket isolated.")
     return 0
 
 
