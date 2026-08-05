@@ -14,6 +14,10 @@ Use when something is already built and behaving badly. Each entry starts from w
 **Diagnosis:** almost always a weak verifier in a fan-out. Each of N branches retries up to `MAX_ATTEMPTS`, so a reviewer that is slightly too strict multiplies spend by N.
 **Fix:** add a spend field summed across every model call and read by at least one router. Then look at *why* the reviewer rejects — a verifier with vague criteria fails good work, and the cheapest fix is a sharper rubric, not a bigger budget.
 
+### "The budget never fires" / "spend field stays flat"
+**Diagnosis:** the spend field replaces instead of accumulating, so it holds the cost of the *last* call rather than the total and never reaches the cap. `+` implements two reducers — append for lists, **sum for ints** — and only the list one usually gets declared. A bare `tokens_spent: int` in a TypedDict, or a spend field missing from the append set in plain code, both produce it.
+**Fix:** declare the reducer (`Annotated[int, operator.add]`, or add the field to the append set). Then assert it: force the spend cap to be the thing that stops the run *and* assert the attempt cap did not get there first — otherwise the tighter bound masks the broken one and every test still passes.
+
 ### "It's slow but nothing is running"
 **Diagnosis:** a fan-in barrier waiting on a branch that is retrying, or accidental sequencing — branches that look parallel but share a resource (a rate-limited key, one DB connection).
 **Fix:** per-branch timeouts, and check whether the parallelism is real. A "parallel" fan-out through one rate-limited client is a queue with extra steps.

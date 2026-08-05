@@ -28,6 +28,9 @@ Walk `design-checklist.md` and record a verdict per point. Then apply these spec
 |---|---|---|
 | **Two-writer fields** | For each state field, count writing nodes | More than one without a reducer = state drift. The highest-yield check. |
 | **Unbounded loops** | Every loop-back edge — is a counter read *and* incremented? | Incremented-but-never-read and read-but-never-incremented both occur. |
+| **Decorative spend bound** | Find the spend field's reducer, then print it at the end of a real run | Replace instead of sum means it holds the last call's cost and the cap never binds. Invisible in testing — the attempt cap fires first. |
+| **Unbounded agent nodes** | Any node that loops with tools until it decides it is done — does it declare its own iteration cap and budget? | The outer bounds do not reach inside it. One outer attempt can burn the whole run. |
+| **Decorative loop-backs** | For each cycle, grep for writers of the field its re-entry point reads | No writer inside the cycle = the loop spends bounds and changes nothing. One command, cheapest finding here. |
 | **Fan-in reducers** | Every field written by parallel branches | Replace instead of append = silent result loss. |
 | **Self-review** | Compare producer and reviewer model + prompt | Same model reviewing itself is a rubber stamp. |
 | **Reviewer scope** | Does the reviewer node return anything but its verdict? | If it edits the artifact, the check isn't independent. |

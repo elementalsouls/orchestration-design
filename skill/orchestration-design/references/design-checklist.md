@@ -32,7 +32,9 @@ Two failure modes here, and they point in opposite directions. Reinventing routi
 Decide from the design, not from habit: fan-out with durable state and complex routing earns a framework; a short linear pipeline does not. See `targets/` — `plain-code.md` is the honest answer more often than people expect, and the design object is identical either way.
 
 ## 8. Set a spend cap and a hard bound
-A graph is many loops; a weak verifier now burns tokens in parallel. Cap it three ways: attempt counters on loop-back edges, a global step limit (LangGraph calls this `recursion_limit`; plain code calls it a counter in the driver; a process calls it `max_rounds`), and a budget field that at least one router actually reads.
+A graph is many loops; a weak verifier now burns tokens in parallel. Cap it four ways: attempt counters on loop-back edges, a global step limit (LangGraph calls this `recursion_limit`; plain code calls it a counter in the driver; a process calls it `max_rounds`), a budget field that at least one router actually reads, and **its own iteration cap and spend budget on every `agent` node** — a node that loops with tools until it decides it is done is not constrained by the outer three, and that is the most common way a design which passes this checklist still runs away.
+
+Two ways a bound that exists still does nothing. The budget field must **accumulate**, not replace — `+` is append for lists and *sum* for ints, and declaring only the list case leaves the field holding the cost of the last call, so the cap can never bind. And bounds mask each other: the tighter one fires first, so prove each one separately as the thing that stops the run, with the others slackened.
 
 ## The five-layer sanity check
 Graph engineering sits on top of layers that must already work: prompt (am I asking well?) → context (right info present?) → harness (tools/memory) → loop (verify & stop) → graph (who does what, in what order). If a lower layer is broken, fixing it beats adding nodes.
