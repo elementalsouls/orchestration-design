@@ -35,8 +35,14 @@ class State(TypedDict):
     notes: Annotated[list[str], operator.add]   # append lists (needed for fan-in!)
     draft: str                                  # replace (last write wins)
     verdict: str                                # written ONLY by reviewer
-    attempts: int                               # loop-back counter
-    tokens_spent: int
+    attempts: int                               # counter — owner increments, replaces
+    tokens_spent: Annotated[int, operator.add]  # SUM across every model-calling node.
+                                                # Plain `int` is last-write-wins, so the
+                                                # field holds the cost of the last call,
+                                                # never the total — and the budget router
+                                                # below can never fire. In a fan-out it is
+                                                # worse: concurrent writes to a key with no
+                                                # reducer raise InvalidUpdateError.
 ```
 
 Design rule: document which node writes each field. A field written by more than one node needs a reducer or it's a state-drift bug waiting to happen. Nodes receive state and **return an update dict** — they never mutate state in place:
@@ -253,6 +259,6 @@ Never ship MemorySaver to production — state vanishes on restart. Use SqliteSa
 - [ ] Reviewer never edits work product; producer never reads its own verdict logic
 - [ ] Fan-in fields use `operator.add` / `add_messages`, not plain replace
 - [ ] Nodes return update dicts; nothing mutates `state[...]` in place
-- [ ] Budget/token field exists and at least one router checks it
+- [ ] Budget/token field exists, **accumulates** (`operator.add`, not plain `int`), and at least one router checks it
 - [ ] `graph.get_graph().draw_mermaid()` matches the paper design
 - [ ] Old-API calls (`set_entry_point`, `ToolExecutor`) don't appear anywhere

@@ -12,6 +12,12 @@
     "edit. `routing_terms` is the guard: those strings must survive in the description or",
     "the request stops reaching the skill.",
     "",
+    "`provenance` says where the record came from: `author` and `cold` are runs that",
+    "happened, `unrun` is a documented path in SKILL.md that no logged run has exercised",
+    "yet. An `unrun` row guards the routing surface and nothing else — its expected_level",
+    "and trigger are the documented intent, never an observed result. Do not count them as",
+    "evidence, and overwrite the row the first time the path is actually run.",
+    "",
     "What check_routing.py can and cannot prove is stated in its docstring. Short version:",
     "it verifies a request can still ROUTE IN. It cannot verify the skill then picks the",
     "right level, because that needs a model. `expected_level` and `trigger` are recorded",
@@ -78,6 +84,16 @@
       "trigger": "coverage cannot be asserted mechanically, and the work runs across sessions",
       "routing_terms": ["compliance pass", "audit", "coverage matters", "I don't know what I've already covered"],
       "outcome": "THE REGRESSION THIS FILE GUARDS. Originally scored zero invocations — every trigger was a software noun. Fired on the first turn after the description gained PROCESS vocabulary."
+    },
+    {
+      "id": "unenumerable-route-research",
+      "task": "Research an open question across sources nobody has listed yet — each finding decides what to look at next — and report what holds up",
+      "kind": "process",
+      "provenance": "cold",
+      "expected_level": 3,
+      "trigger": "a causal claim cannot be asserted mechanically — 'pricing confusion drove it' has no test that passes, so one read-only skeptic is the fix. The unknowable route did NOT raise the level",
+      "routing_terms": ["research project", "how do I structure this"],
+      "outcome": "Cold headless run, 5 turns, run from outside the repo so no project CLAUDE.md could contaminate it. Fired on turn 1 unprompted; read graph-design.md and targets/procedural.md. Landed level 3, not the level 2 this row predicted before it was run. It did not take the pre-ladder exit — it reframed the case: 'the route through hypotheses is unknowable; the loop shape is known', and applied Pattern D (loop until dry with a coverage gate) from procedural.md rather than abandoning structure. Phase 2.5 behaved: hard stop at the design, mermaid link offered rather than minted, one specific closing question. So the exit at SKILL.md Phase 1 is STILL UNEXERCISED — this run found a knowable loop shape underneath an unknowable route, which is the more common case and may be why the exit rarely fires."
     }
   ],
 

@@ -196,6 +196,16 @@ For **every** field record four things:
 - **counter** — a scalar the owner increments; used by bounds.
 - **sum** — accumulates across every writer; how spend tracking works.
 
+**`counter` and `sum` are both ints and they are not the same reducer.** A counter is
+owned by one node and *replaces* (`attempts + 1`); a sum is written by every model-calling
+node and *accumulates*. In code they look identical until they don't: `+` implements two of
+the four — **append for lists, sum for ints** — so a spend field left out of the append set,
+or declared as a bare `int` in a TypedDict, is silently replaced with the cost of the last
+call. It never climbs, and the budget router that reads it can never fire. Declare it.
+
+That failure is invisible to every other test, because the attempt cap fires first at any
+normal budget — see the bound-masking rule in §4.
+
 ### The three state rules
 
 1. **One writer per field.** A field written by two nodes needs a reducer or it is a state-drift bug waiting to happen. The symptom is outputs that change depending on execution order — a bug that reproduces intermittently and eats days.
@@ -210,13 +220,21 @@ Related: decide per node whether it is **resident** (accumulates history across 
 
 ## 4. Bounds
 
-A graph is many loops, sometimes running in parallel. A weak verifier now burns budget concurrently. Bound it **three independent ways**, so no single missed check produces a runaway:
+A graph is many loops, sometimes running in parallel. A weak verifier now burns budget concurrently. Bound it **four independent ways**, so no single missed check produces a runaway:
 
 1. **Attempt counter** — in state, incremented by the owner, checked by the router on every loop-back edge.
 2. **Global step limit** — a hard cap on total node executions for the whole run. The backstop for a counter you forgot.
 3. **Spend budget** — a `tokens_spent`-style field accumulated by every model-calling node, checked by at least one router, which routes to a terminal when exceeded. **Where nothing costs tokens, bound whatever does cost**: HTTP requests, pages fetched, rows written, wall clock. A design with no models is not a design that cannot run away — it just runs away on someone else's rate limit instead of your bill.
 
 4. **Per-agent-node bounds.** Any node of kind `agent` (see §1) carries its own iteration cap and spend budget. The outer three do **not** constrain what happens inside it — this is the most common way a design that passes this checklist still runs away.
+
+**Bounds mask each other, so prove them one at a time.** Where two bounds guard the same
+loop, the tighter one always fires first and the looser one is never exercised — a spend
+budget that silently fails to accumulate (§3) passes every test in a suite whose attempt cap
+stops the run first. Assert **each bound separately as the thing that stops the run**, with
+the others slackened: force the reviewer to never pass *and* set the budget below one round,
+then assert the run stopped on spend and that the attempt cap did **not** get there first.
+A bound you have never seen fire is a bound you have not tested.
 
 Then decide the **exhaustion terminal** explicitly (see §2) and make sure the run tells you it happened. A result that silently shipped without passing review is worse than a loud failure.
 
