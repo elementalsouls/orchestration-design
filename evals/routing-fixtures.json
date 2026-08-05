@@ -89,11 +89,11 @@
       "id": "unenumerable-route-research",
       "task": "Research an open question across sources nobody has listed yet — each finding decides what to look at next — and report what holds up",
       "kind": "process",
-      "provenance": "unrun",
-      "expected_level": 2,
-      "trigger": "the valid paths cannot be enumerated in advance — the route depends on what the work turns up, so the pre-ladder question in Phase 1 sends this to an agent harness rather than a level with a route table",
+      "provenance": "cold",
+      "expected_level": 3,
+      "trigger": "a causal claim cannot be asserted mechanically — 'pricing confusion drove it' has no test that passes, so one read-only skeptic is the fix. The unknowable route did NOT raise the level",
       "routing_terms": ["research project", "how do I structure this"],
-      "outcome": "NO END-TO-END RUN YET. Recorded to guard the routing surface for the Phase 1 pre-ladder exit, which SKILL.md documents but no logged run has exercised. The level and trigger here are the documented intent, not an observed result — do not read this row as evidence the skill lands on level 2. Replace `provenance` with author or cold, and this text with what actually happened, the first time it is run."
+      "outcome": "Cold headless run, 5 turns, run from outside the repo so no project CLAUDE.md could contaminate it. Fired on turn 1 unprompted; read graph-design.md and targets/procedural.md. Landed level 3, not the level 2 this row predicted before it was run. It did not take the pre-ladder exit — it reframed the case: 'the route through hypotheses is unknowable; the loop shape is known', and applied Pattern D (loop until dry with a coverage gate) from procedural.md rather than abandoning structure. Phase 2.5 behaved: hard stop at the design, mermaid link offered rather than minted, one specific closing question. So the exit at SKILL.md Phase 1 is STILL UNEXERCISED — this run found a knowable loop shape underneath an unknowable route, which is the more common case and may be why the exit rarely fires."
     }
   ],
 
