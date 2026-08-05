@@ -42,7 +42,8 @@ def writer(s: State) -> dict:
             "tokens_spent": r.usage["total_tokens"]}
 
 # Reducers are DECLARED, copied from the Phase 2 state table. Never inferred.
-APPEND = {"notes", "errors"}          # everything else replaces
+# `+` covers TWO of the four: append for lists, sum for ints. Both go here.
+APPEND = {"notes", "errors", "tokens_spent"}     # everything else replaces
 
 
 def apply(s: State, update: dict) -> State:

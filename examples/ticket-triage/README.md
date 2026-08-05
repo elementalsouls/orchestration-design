@@ -135,7 +135,7 @@ All five assertions, run by `--selftest`:
 | # | Assertion | Result |
 |---|---|---|
 | 1 | Reviewer is read-only — snapshot assignments, run reviewer, compare | asserted every round, inline |
-| 2 | Bound is live — substitute a never-passing reviewer | stops at `MAX_ATTEMPTS` |
+| 2 | **Both** bounds are live — never-passing reviewer for the attempt cap, then the same run at a budget one round cannot afford | stops at `MAX_ATTEMPTS`; then stops on spend *before* `MAX_ATTEMPTS` |
 | 3 | Exhaustion terminal reachable **and** marked | digest carries `UNREVIEWED` |
 | 4 | Failure isolated — inject a malformed ticket | skipped, other 12 complete |
 | 5 | **Counts add up** — one assignment per ticket, no duplicate ids | catches the reducer bug below |
@@ -172,7 +172,7 @@ That is one reviewer catching a real security misclassification, for ~1.5k token
 
 ```bash
 python examples/ticket-triage/triage.py            # the digest
-python examples/ticket-triage/triage.py --selftest # the four assertions
+python examples/ticket-triage/triage.py --selftest # the five assertions
 ```
 
 Runs offline with deterministic stub models — no API key. Set
@@ -193,3 +193,13 @@ Two real defects, both found by *running* the skill rather than reading it:
    declares an explicit `APPEND` set copied from the Phase 2 state table, shows
    the wrong version under a "never infer the reducer from the type" heading,
    and requires a count assertion as the guard.
+3. **A decorative spend bound, from the other half of the same fix.** Declaring
+   reducers cured the append bug and quietly created a sum bug: `tokens_spent`
+   was left out of `APPEND`, so it was *replaced* with the cost of the last
+   call instead of summed. It sat at 240 across a 960-token run, and
+   `BUDGET_TOKENS = 20_000` could never bind at any scale. `+` implements two
+   Phase 2 reducers — append for lists, **sum for ints** — and only one of them
+   was declared. Invisible to every test, because the attempt cap always fired
+   first. Assertion 2 now forces the spend cap specifically and asserts the
+   attempt cap did *not* get there first; reverting the one-word fix fails it
+   by name. The same omission was in `plain-code.md`, and is fixed there too.
